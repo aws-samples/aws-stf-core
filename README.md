@@ -6,6 +6,10 @@
 
 <br> 
 
+> :warning: Deploying the application contained in this repository will cause your AWS Account to be billed for any AWS services used by the application
+
+<br>
+
 ## Overview 
 
 The Smart Territory Framework - STF - is a set of tools and standardized modules that our partners and customers can assemble together to build and operate sustainable and highly effective solutions. 
@@ -709,3 +713,4 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
+
