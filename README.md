@@ -120,6 +120,8 @@ In case you want to deploy the STF IoT stack independently and connect it to an 
 
 ## Getting started 
 
+<br>
+
 > :warning: Deploying the application contained in this repository will cause your AWS Account to be billed for any AWS services used by the application
 
 <br> 
