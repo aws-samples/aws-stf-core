@@ -116,13 +116,11 @@ Accordingly, the [Lambda function](./lib/stacks/stf-iot/stf-iot-core/lambda/upda
 
 In case you want to deploy the STF IoT stack independently and connect it to an existing Context Broker, you can update the [configuration](./lib/stacks/stf-iot/stf-iot-core/index.ts) and the [code](./lib/stacks/stf-iot/stf-iot-core/lambda/updateContextBroker/index.js) of the Lambda function to adapt to the security requirements of your existing Context Broker. 
 
-
-
 ## Getting started 
 
 <br>
 
-> :warning: Deploying the application contained in this repository will cause your AWS Account to be billed for any AWS services used by the application
+> :warning: Note, you will incur costs for the AWS services used by this application. To track costs in your AWS account, consider using [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/) and [AWS Billing and Cost Management](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/billing-what-is.html). You can also set up a [billing alarm](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/monitor_estimated_charges_with_cloudwatch.html) to get notified of unexpected charges.
 
 <br> 
 
