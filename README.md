@@ -1,4 +1,4 @@
-# Smart Territory Framework Core - STF Core 
+# Smart Territory Framework Core - STF Core using NEC Scorpio Broker
 
 <br>
 
