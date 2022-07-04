@@ -387,7 +387,7 @@ You use the tool [Postman](https://www.postman.com/product/what-is-postman/) to 
         "value": ["ParkingSpot", "LoRaWAN"]
     },
     "location": {
-        "type": "Property",
+        "type": "GeoProperty",
         "value": {
                 "type": "Point",
                 "coordinates": [
@@ -551,7 +551,7 @@ For example, for a thing named `SmartParking-BoschPLS-edd9ab00002022cc`, the ent
     "id": "urn:ngsi-ld:Device:SmartParking-BoschPLS-edd9ab00002022cc",
     "type": "Device",
     "location": {
-        "type": "Property",
+        "type": "GeoProperty",
         "value": {
                 "type": "Point",
                 "coordinates": [

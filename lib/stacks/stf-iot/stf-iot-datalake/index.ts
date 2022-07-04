@@ -24,12 +24,12 @@ export class StfIotDataLake extends Construct {
 
         // CREATE THE IOT DATALAKE BUCKET 
 
-        const bucket = new Bucket(this, 'BucketStfIotDataLake', {
-            bucketName: `stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}`
-        })
+        // const bucket = new Bucket(this, 'BucketStfIotDataLake', {
+        //     bucketName: `stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}`
+        // })
 
         //  (COULD BE REPLACED BY AN EXISTING ONE, SEE COMMENTED CODE BELOW)
-        //const bucket = Bucket.fromBucketName(this, 'BucketStfIotDataLake', `stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}`)
+       const bucket = Bucket.fromBucketName(this, 'BucketStfIotDataLake', `stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}`)
 
         // Role for Kinesis firehose 
         const role_firehose = new Role(this, 'FirehoseRole', {
@@ -61,8 +61,8 @@ export class StfIotDataLake extends Construct {
                     bucketArn: bucket.bucketArn,
                     roleArn: role_firehose.roleArn,
                     bufferingHints: {
-                        intervalInSeconds: 120,
-                        sizeInMBs: 5
+                        intervalInSeconds: 60,
+                        sizeInMBs: 64
                     },
                     processingConfiguration: {
                         enabled: true, 
@@ -73,10 +73,30 @@ export class StfIotDataLake extends Construct {
                                     parameterName: 'LambdaArn',
                                     parameterValue: lambda_transform.functionArn
                                 }]
+                            }, 
+                            {
+                                type: 'MetadataExtraction', 
+                                    parameters: 
+                                    [ 
+                                      {
+                                        parameterName: "MetadataExtractionQuery", 
+                                        parameterValue: "{type:.type}"
+                                      },
+                                      {
+                                        parameterName: "JsonParsingEngine", 
+                                        parameterValue: "JQ-1.6"
+                                      },
+                                    ]
                             }
                         ]
-                    }
+                    },
+                    dynamicPartitioningConfiguration: {
+                        enabled: true
+                    },
+                    prefix: `type=!{partitionKeyFromQuery:type}/dt=!{timestamp:yyyy}-!{timestamp:MM}-!{timestamp:dd}/`,
+                    errorOutputPrefix: `type=!{firehose:error-output-type}/dt=!{timestamp:yyy}-!{timestamp:MM}-!{timestamp:dd}/`
                 }
+                
         })
 
         role_sns.addToPolicy(new PolicyStatement({
