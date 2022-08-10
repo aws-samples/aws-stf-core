@@ -1,7 +1,9 @@
 import { Aws, Duration } from "aws-cdk-lib"
-import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway"
+
+import { CfnIntegration, CfnRoute, CfnVpcLink } from "aws-cdk-lib/aws-apigatewayv2"
+import { SubnetType, Vpc } from "aws-cdk-lib/aws-ec2"
 import { PolicyStatement } from "aws-cdk-lib/aws-iam"
-import { Runtime, Function, Code } from "aws-cdk-lib/aws-lambda"
+import { Runtime, Function, Code, CfnPermission, LayerVersion } from "aws-cdk-lib/aws-lambda"
 import { RetentionDays } from "aws-cdk-lib/aws-logs"
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from "aws-cdk-lib/custom-resources"
 import { Construct } from "constructs"
@@ -9,13 +11,14 @@ import { Parameters } from "../../../../parameters"
 
 
 export interface StfIotApiProps {
+    readonly api_ref: string,
+    readonly vpc: Vpc,
+    dns_context_broker: string
 }
 
 export class StfIotApi extends Construct {
    
-    public readonly iot_api_endpoint: string
-
-    constructor(scope: Construct, id: string, props?: StfIotApiProps){
+    constructor(scope: Construct, id: string, props: StfIotApiProps){
         super(scope, id)
 
 
@@ -34,16 +37,72 @@ export class StfIotApi extends Construct {
 
         const AWS_IOT_ENDPOINT = get_iot_endpoint.getResponseField('endpointAddress')
 
-        const api_iot_stf = new RestApi(this, 'ApiStfIot')
+        // ENABLE FLEET INDEXING
 
-        // DEVICE MANAGEMENT RESOURCE
-        const resource_device = api_iot_stf.root.addResource('devices')
+        const fleet_indexing = new AwsCustomResource(this, 'IoTFleetIndexing', {
+            onCreate: {
+                service: 'Iot',
+                action: 'updateIndexingConfiguration',
+                physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
+                parameters: {
+                    "thingIndexingConfiguration": {
+                        "thingIndexingMode": "REGISTRY_AND_SHADOW",
+                        "thingConnectivityIndexingMode": "STATUS",
+                        "namedShadowIndexingMode": "ON",
+                        "filter": {
+                            "namedShadowNames": [
+                                `${Parameters.shadow_prefix}-Device`
+                            ]
+                        }
 
-        // LAMBDA THAT ADDS DEVICES
-        const lambda_post_device_path = `${__dirname}/lambda/postDevice`
-        const lambda_post_device = new Function(this, 'LambdaPostDevice', {
+                    },
+                    "thingGroupIndexingConfiguration": {
+                        "thingGroupIndexingMode": "ON"
+                    }
+                }
+              },
+              onUpdate: {
+                service: 'Iot',
+                action: 'updateIndexingConfiguration',
+                physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
+                parameters: {
+                    "thingIndexingConfiguration": {
+                        "thingIndexingMode": "REGISTRY_AND_SHADOW",
+                        "thingConnectivityIndexingMode": "STATUS",
+                        "namedShadowIndexingMode": "ON",
+                        "filter": {
+                            "namedShadowNames": [
+                                `${Parameters.shadow_prefix}-Device`
+                            ]
+                        }
+
+                    },
+                    "thingGroupIndexingConfiguration": {
+                        "thingGroupIndexingMode": "ON"
+                    }
+                }
+              },
+              policy: AwsCustomResourcePolicy.fromSdkCalls({resources: AwsCustomResourcePolicy.ANY_RESOURCE})
+        })
+
+        // LAMBDA LAYER (SHARED LIBRARIES)
+        const layer_lambda_path = `./lib/stacks/stf-iot/layers`
+        const layer_lambda = new LayerVersion(this, 'LayerLambda', {
+            code: Code.fromAsset(layer_lambda_path),
+            compatibleRuntimes: [Runtime.NODEJS_14_X]
+        })
+
+// ********************************************** 
+
+        /**
+         *  POST THING
+         */
+
+        // LAMBDA THAT POSTS THING
+        const lambda_post_thing_path = `${__dirname}/lambda/postThing`
+        const lambda_post_thing = new Function(this, 'LambdaPostThing', {
             runtime: Runtime.NODEJS_14_X,
-            code: Code.fromAsset(lambda_post_device_path),
+            code: Code.fromAsset(lambda_post_thing_path),
             handler: 'index.handler',
             timeout: Duration.seconds(15),
             logRetention: RetentionDays.THREE_MONTHS,
@@ -54,7 +113,7 @@ export class StfIotApi extends Construct {
                 }   
         })
 
-        lambda_post_device.addToRolePolicy(new PolicyStatement({
+        lambda_post_thing.addToRolePolicy(new PolicyStatement({
             actions: [
                 "iot:UpdateThingGroup",
                 "iot:CreateThingGroup",
@@ -69,29 +128,218 @@ export class StfIotApi extends Construct {
             ]
         }))
 
-        const integration_post_device = new LambdaIntegration(lambda_post_device)
-        resource_device.addMethod('POST', integration_post_device, {apiKeyRequired: true})
-
-        // ADD API KEY FOR THE API 
-        const api_key=   api_iot_stf.addApiKey('StfIotApiKey', {
-            apiKeyName: 'stf_iot_api_key', 
-            value: Parameters.iot_api_key
+        const post_thing_integration = new CfnIntegration(this, 'postThingIntegration', {
+            apiId: props.api_ref,
+            integrationMethod: "POST",
+            integrationType: "AWS_PROXY",
+            integrationUri: lambda_post_thing.functionArn,
+            connectionType: "INTERNET",
+            description: "POST THING INTEGRATION",
+            payloadFormatVersion: "1.0",
         })
 
-        const plan_api_iot_stf = api_iot_stf.addUsagePlan('UsagePlan', {
-            name: 'Admin'
+        const post_thing_route = new CfnRoute(this, 'PostThingRoute', {
+            apiId: props.api_ref,
+            routeKey: "POST /iot/things",
+            target: `integrations/${post_thing_integration.ref}`
         })
 
-        plan_api_iot_stf.addApiKey(api_key)
-        
-        plan_api_iot_stf.addApiStage({
-            stage: api_iot_stf.deploymentStage
+        new CfnPermission(this, 'ApiGatewayLambdaPermissionPostThing', {
+            principal: `apigateway.amazonaws.com`,
+            action: 'lambda:InvokeFunction',
+            functionName: lambda_post_thing.functionName,
+            sourceArn: `arn:aws:execute-api:${Aws.REGION}:${Aws.ACCOUNT_ID}:${props.api_ref}/*/*/*`
         })
 
-        this.iot_api_endpoint = api_iot_stf.url
+        /**
+        *  END POST THING 
+        */
 
 
+// ********************************************** 
 
+        /**
+        *  DELETE THING 
+        */
+
+        // LAMBDA THAT DELETE THING
+        const lambda_delete_thing_path = `${__dirname}/lambda/deleteThing`
+        const lambda_delete_thing = new Function(this, 'LambdaDeleteThing', {
+            vpc: props.vpc, 
+            vpcSubnets: {
+                subnetType: SubnetType.PRIVATE_WITH_NAT
+            },
+            runtime: Runtime.NODEJS_14_X,
+            code: Code.fromAsset(lambda_delete_thing_path),
+            handler: 'index.handler',
+            timeout: Duration.seconds(15),
+            logRetention: RetentionDays.THREE_MONTHS,
+            layers: [layer_lambda],
+            environment: {
+                AWSIOTREGION: Aws.REGION,
+                AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
+                SHADOW_PREFIX: Parameters.shadow_prefix,
+                DNS_CONTEXT_BROKER: props.dns_context_broker,
+                TIMEOUT: Parameters.timeout
+                }   
+        })
+
+        lambda_delete_thing.addToRolePolicy(new PolicyStatement({
+            actions: [
+                "iot:DeleteThing",
+                "iot:DeleteThingShadow",
+                "iot:ListNamedShadowsForThing",
+
+            ],
+            resources: [
+                `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:thing/*`
+            ]
+        }))
+
+        const delete_thing_integration = new CfnIntegration(this, 'deleteThingIntegration', {
+            apiId: props.api_ref,
+            integrationMethod: "DELETE",
+            integrationType: "AWS_PROXY",
+            integrationUri: lambda_delete_thing.functionArn,
+            connectionType: "INTERNET",
+            description: "DELETE THING INTEGRATION",
+            payloadFormatVersion: "1.0",
+        })
+
+        const delete_thing_route = new CfnRoute(this, 'DeleteThingRoute', {
+            apiId: props.api_ref,
+            routeKey: "DELETE /iot/things/{thingName}",
+            target: `integrations/${delete_thing_integration.ref}`
+        })
+
+        new CfnPermission(this, 'ApiGatewayLambdaPermissionDeleteThing', {
+            principal: `apigateway.amazonaws.com`,
+            action: 'lambda:InvokeFunction',
+            functionName: lambda_delete_thing.functionName,
+            sourceArn: `arn:aws:execute-api:${Aws.REGION}:${Aws.ACCOUNT_ID}:${props.api_ref}/*/*/*`
+        })
+
+    /***
+     * END DELETE THING 
+     */
+
+/************************************************************************** */
+
+
+        /**
+         *  GET THING
+         */
+
+        // LAMBDA THAT GETS THING
+        const lambda_get_thing_path = `${__dirname}/lambda/getThing`
+        const lambda_get_thing = new Function(this, 'LambdaGetThing', {
+            runtime: Runtime.NODEJS_14_X,
+            code: Code.fromAsset(lambda_get_thing_path),
+            handler: 'index.handler',
+            timeout: Duration.seconds(15),
+            logRetention: RetentionDays.THREE_MONTHS,
+            environment: {
+                AWSIOTREGION: Aws.REGION,
+                AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
+                SHADOW_PREFIX: Parameters.shadow_prefix,
+                }   
+        })
+
+        lambda_get_thing.addToRolePolicy(new PolicyStatement({
+            actions: [
+                "iot:GetThing",
+                "iot:listNamedShadowsForThing",
+                "iot:getThingShadow"
+            ],
+            resources: [
+                `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:thing/*`
+            ]
+        }))
+
+        const get_thing_integration = new CfnIntegration(this, 'getThingIntegration', {
+            apiId: props.api_ref,
+            integrationMethod: "GET",
+            integrationType: "AWS_PROXY",
+            integrationUri: lambda_get_thing.functionArn,
+            connectionType: "INTERNET",
+            description: "GET THING INTEGRATION",
+            payloadFormatVersion: "1.0",
+        })
+
+        const get_thing_route = new CfnRoute(this, 'GetThingRoute', {
+            apiId: props.api_ref,
+            routeKey: "GET /iot/things/{thingName}",
+            target: `integrations/${get_thing_integration.ref}`
+        })
+
+        new CfnPermission(this, 'ApiGatewayLambdaPermissionGetThing', {
+            principal: `apigateway.amazonaws.com`,
+            action: 'lambda:InvokeFunction',
+            functionName: lambda_get_thing.functionName,
+            sourceArn: `arn:aws:execute-api:${Aws.REGION}:${Aws.ACCOUNT_ID}:${props.api_ref}/*/*/*`
+        })
+
+        /**
+        *  END GET THING 
+        */
+
+        /************************************************************************** */
+
+
+        /**
+         *  GET THINGS
+         */
+
+        // LAMBDA THAT GETS THING
+        const lambda_get_things_path = `${__dirname}/lambda/getThings`
+        const lambda_get_things = new Function(this, 'LambdaGetThings', {
+            runtime: Runtime.NODEJS_14_X,
+            code: Code.fromAsset(lambda_get_things_path),
+            handler: 'index.handler',
+            timeout: Duration.seconds(15),
+            logRetention: RetentionDays.THREE_MONTHS,
+            environment: {
+                AWSIOTREGION: Aws.REGION,
+                AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
+                SHADOW_PREFIX: Parameters.shadow_prefix,
+                }   
+        })
+
+        lambda_get_things.addToRolePolicy(new PolicyStatement({
+            actions: [
+                "iot:searchIndex"
+            ],
+            resources: [
+                `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:index/*`
+            ]
+        }))
+
+        const get_things_integration = new CfnIntegration(this, 'getThingsIntegration', {
+            apiId: props.api_ref,
+            integrationMethod: "GET",
+            integrationType: "AWS_PROXY",
+            integrationUri: lambda_get_things.functionArn,
+            connectionType: "INTERNET",
+            description: "GET THINGS INTEGRATION",
+            payloadFormatVersion: "1.0",
+        })
+
+        const get_things_route = new CfnRoute(this, 'GetThingsRoute', {
+            apiId: props.api_ref,
+            routeKey: "GET /iot/things",
+            target: `integrations/${get_things_integration.ref}`
+        })
+
+        new CfnPermission(this, 'ApiGatewayLambdaPermissionGetThings', {
+            principal: `apigateway.amazonaws.com`,
+            action: 'lambda:InvokeFunction',
+            functionName: lambda_get_things.functionName,
+            sourceArn: `arn:aws:execute-api:${Aws.REGION}:${Aws.ACCOUNT_ID}:${props.api_ref}/*/*/*`
+        })
+
+        /**
+        *  END GET THINGS
+        */
 
     }
 }
