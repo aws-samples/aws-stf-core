@@ -205,13 +205,11 @@ The response is:
 
 __Voilà!__ 
 
+If you are familiar with the FIWARE Context Broker and the NGSI-LD specification, you can skip the next section an go directly to [Register and manage your things using the STF IoT API](#register-and-manage-your-things-using-the-stf-iot-api).
+
 ### Understanding the NGSI-LD Information Model
 
 Before you build solutions and start ingesting data using the STF Core, you need to understand the NGSI-LD Information model and the [design considerations](#design-considerations) for builing a Smart Territory Platform using the STF.  
-
-<br>
-
-> See [Design Considerations](#design-considerations) for more information.
 
 <br> 
 
