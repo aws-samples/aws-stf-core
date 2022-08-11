@@ -346,7 +346,7 @@ You can check that the entity is stored by sending a `GET` request to the endpoi
 _If you still provide the context in the header, the entity will be compacted._
 
 
-You can now delete this entity by sending a `DELETE` request to the endpoint `{ContextBrokerPublicApiEndpoint}/ngsi-ld/v1/entities/urn:ngsi-ld:Device:MyFirstDevice`
+You can now delete this entity by sending a `DELETE` request to the endpoint `{StfCoreEndpoint}/ngsi-ld/v1/entities/urn:ngsi-ld:Device:MyFirstDevice`
 
 <br>
 
