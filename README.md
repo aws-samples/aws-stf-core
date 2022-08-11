@@ -182,7 +182,7 @@ Now that the STF Core is up and running you can innovate at a fast pace. You can
 
 ### Checking that the Context Broker is running
 
-Before this, let's check that the FIWARE Context Broker is up and running. You can send an HTTP GET to ```{StfCoreEndpoint}```/actuator/info. In the example below, I use the [CURL](https://curl.se/) tool in my terminal but you can paste the URL into any web browser. 
+Before this, let's check that the FIWARE Context Broker is up and running. You can send an HTTP GET to `{StfCoreEndpoint}/actuator/info`. In the example below, I use the [CURL](https://curl.se/) tool in my terminal but you can paste the URL into any web browser. 
 
 ```
 curl https://abcde5678.execute-api.aws-region.amazonaws.com/actuator/info
