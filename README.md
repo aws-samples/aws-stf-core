@@ -97,7 +97,13 @@ The STF IoT Data Lake is built on top of Amazon S3. A bucket named ```stf-iot-da
 
 <br>
 
-The STF IoT module also consists of an API for device management. The STF Core provides an unified API to provision and manage your things in the STF and to interact with the FIWARE Context Broker (see [How to use it](##how-to-use-it) section for more details).
+
+With a single endpoint, the STF IoT module provides an API for device management in addition to the NGSI-LD FIWARE Context Broker API. 
+Indeed, the STF Core provides a unified API that exposes two services:  
+- the NGSI-LD FIWARE API to interact with the FIWARE Context Broker
+- the STF IoT API to provision and manage your things in the STF IoT Registry. 
+
+See [How to use it](##how-to-use-it) section for more details on how to use the STF unified API.
 
 <br>
 
@@ -143,9 +149,7 @@ cdk deploy
 
 Once the STF Core stack is deployed, you will find in the output all the information needed to operate and connect your smart solutions using the STF including: 
 
-- The STF Core endpoint ```StfCoreEndpoint```. The STF Core endpoint is a unified API that exposes two services: The NGSI-LD FIWARE Context Broker API (that fully complies with the [NGSI-LD API](https://forge.etsi.org/swagger/ui/?url=https://forge.etsi.org/rep/NGSI-LD/NGSI-LD/raw/master/spec/updated/generated/full_api.json)) and the STF IoT API that you can use to provision and manage your things in the central and unified STF registry. __Before using this stack in production, please consider adding a [mechanism for controlling and managing access](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-access-control.html) to the ```StfCoreEndpoint```.__
-
-- The STF IoT Device API endpoint ```IotDeviceApiEndpoint``` for the IoT Device Management. You will use this endpoint (using the API key defined in the file [```parameters.ts```](./parameters.ts)) to provision your things in the STF registry. Before using this stack in production, please consider adding a [mechanism for controlling and managing access](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-control-access-to-api.html) to this [REST API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-rest-api.html). 
+- The STF unified API endpoint ```StfCoreEndpoint```. This endpoint is a unified API that exposes two services: The NGSI-LD FIWARE Context Broker API (that fully complies with the [NGSI-LD API](https://forge.etsi.org/swagger/ui/?url=https://forge.etsi.org/rep/NGSI-LD/NGSI-LD/raw/master/spec/updated/generated/full_api.json)) and the STF IoT API that you can use to provision and manage your things in the central and unified STF registry. __Before using this stack in production, please consider adding a [mechanism for controlling and managing access](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-access-control.html) to the ```StfCoreEndpoint```.__
 
 - The ARN of the Amazon SQS Queue of the STF IoT module ```StfCoreIotQueueArn```. The default value of the ARN of the queue is `arn:aws:sqs:${Aws.REGION}:${Aws.ACCOUNT_ID}:StfIoTQueue-${Aws.REGION}`. 
 This queue is the single entry point for all data producers. Usually, the data producer transforms the source data format into the data model relevant to the use case and then publishes the transformed data into the queue. See [Building Data Producers and Data Consumers ](#building-data-producers-and-data-consumers) section for more details. 
@@ -289,9 +293,9 @@ That being said, you are ready to create your first entity.
 
 In this section, you will use the tool [Postman](https://www.postman.com/product/what-is-postman/) to test the Context Broker API. 
 
-You will use the Context Broker service of the STF Core unified API to create your first entity in the Context Broker. 
+You will use the Context Broker service of the STF Core unified API to create your first entity in the Context Broker.
 
-For CRUD (Create, Read, Update and Delete) operations on entities, the endpoint `{StfCoreEndpoint}/ngsi-ld/v1/entities` is used (as per the [NGSI-LD specification](https://www.etsi.org/committee/cim)). 
+For CRUD (Create, Read, Update and Delete) operations on entities, the endpoint `{StfCoreEndpoint}/ngsi-ld/v1/entities` is used (SEE [NGSI-LD API definition](https://forge.etsi.org/swagger/ui/?url=https://forge.etsi.org/rep/NGSI-LD/NGSI-LD/raw/master/spec/updated/generated/full_api.json)). 
 
 When using the `POST` method, you can provide the `@context` in the payload, as shown above, or in the HTTP headers:  
 ```
@@ -355,11 +359,11 @@ You can now delete this entity by sending a `DELETE` request to the endpoint `{C
 
 Now, you can start provision your things and ingesting data using the STF IoT Service API. 
 
-### Register your first thing using the STF IoT Service API
+### Register and manage your things using the STF IoT API
 
 Implementing smart and efficient solutions using the STF requires some design considerations. While some of them will be discussed in this section, a whole section is dedicated to these [design considerations](#design-considerations). 
 
-In this section, you will use the STF IoT service of the STF Core unified API to register a thing in the central IoT registry and then check that its entity of type `Device` is stored in its shadow named `Stf-Device` and in the Context Broker. 
+In this section, you will use the STF IoT service of the STF Core unified API to register a thing in the central IoT registry and then check that its entity of type `Device` is stored in its shadow named `Stf-Device` and in the Context Broker. You will then explore the capabilities of the STF IoT API. 
 
 You use the tool [Postman](https://www.postman.com/product/what-is-postman/) to send a `POST` request to the `{StfCoreEndpoint}/iot/things` endpoint with the following body:
 
@@ -395,7 +399,9 @@ The property `thingGroups` __is not part of the data model__ and is removed befo
 <br>
 
 
-This will create a thing named `SmartParking-BoschPLS-edd9ab00002022cc` in [AWS IoT Core Things Registry](https://docs.aws.amazon.com/iot/latest/developerguide/thing-registry.html) and create or update its shadow named `Stf-Device` with the payload above. 
+This will create a thing named `SmartParking-BoschPLS-edd9ab00002022cc` in the [AWS IoT Core Things Registry](https://docs.aws.amazon.com/iot/latest/developerguide/thing-registry.html) and create or update its shadow named `Stf-Device` with the payload above. 
+
+Now you can check that this entity has been created in the Context Broker as well by sending a `GET` request to `{StfCoreEndpoint}/ngsi-ld/v1/entities/urn:ngsi-ld:Device:SmartParking-BoschPLS-edd9ab00002022cc`. 
 
 <br>
 
@@ -407,7 +413,7 @@ This will create a thing named `SmartParking-BoschPLS-edd9ab00002022cc` in [AWS 
 
 <br>
 
-You can see in the screenshot above that the `Fleet indexing status` of the named shadow `Stf-Device` is `indexed`. The STF Core stack enables [Fleet Indexing](https://docs.aws.amazon.com/iot/latest/developerguide/iot-indexing.html) for the named shadow `Stf-Devices` so you can list all the things registered in registry with a single query. 
+You can see in the screenshot above that the `Fleet indexing status` of the named shadow `Stf-Device` is `indexed`. The STF Core stack enables [Fleet Indexing](https://docs.aws.amazon.com/iot/latest/developerguide/iot-indexing.html) for the named shadow `Stf-Devices` so you can list all the things registered in the registry with a single query. 
 
 <br>
 
@@ -419,7 +425,32 @@ You can query `{StfCoreEndpoint}/iot/things` to get this list of all the things 
 
 <br>
 
-Now you can also check that this entity has been created in the Context Broker as well by sending a `GET` request to `{StfCoreEndpoint}/ngsi-ld/v1/entities/urn:ngsi-ld:Device:SmartParking-BoschPLS-edd9ab00002022cc`
+With the single query `{StfCoreEndpoint}/iot/things/{thingName}`, you can also get all the entities associated to the thing.
+
+<br>
+
+![Get Thing](./docs/images/getthing.png)
+
+<br>
+
+Above, the array `entities` only contains the entity `Stf-Device` as this is the only one associated to the thing so far. 
+But when the sensor produces data, you will see all the entities associated in the array (see [Building Data Producers and Data Consumers](#building-data-producers-and-data-consumers) section). 
+
+You can filter the associated entities you want to retrieve with the parameter `shadows` and the type of the entities to retrieve separated with a comma. 
+You can for example only gets the entity of type `ParkingSpot` with the query `GET` `{StfCoreEndpoint}/iot/things/{thingName}?shadows=ParkingSpot`. 
+If you want to retrieve the entities of type `Device` and `ParkingSpot`, the query is `GET` `{StfCoreEndpoint}/iot/things/{thingName}?shadows=ParkingSpot,Device`. 
+
+
+<br>
+
+Finally, with the STF IoT API you can also delete your things in the STF IoT Registry with the request `DELETE` `{StfCoreEndpoint}/iot/things/{thingName}`. The deletion of a thing in the STF IoT Registry will lead to the deletion of the associated entity of type `Device` in both the STF IoT Registry and the Context Broker but will keep its other associated entities. If you want to delete the things and all its associated entities in the STF IoT Registry and in the Context Broker, you can use the parameter `recursive` with the value `true`: `DELETE {StfCoreEndpoint}/iot/things/{thingName}?recursive=true`
+
+
+<br>
+
+![Delete Thing](./docs/images/deletething.png)
+
+<br>
 
 If it's all good, you are ready to start building your data producers and data consumers.  
 
@@ -435,7 +466,7 @@ Same for Data Consumers. the STF Core offers multiple ways to consume the data: 
 
 You can combine all theses capabilities to build comprehensive and scalable solutions easily, iterate and innovate at a fast pace. 
 
-Below a reference architecture with examples of Data Producers and Data Consumers. 
+Below a reference architecture with examples of Data Producers and Data Consumers using AWS services. 
 
 <br>
 
@@ -445,7 +476,7 @@ Below a reference architecture with examples of Data Producers and Data Consumer
 
 For each Data Producer, it is about using the right tool to ingest the data and route it to a [Lambda function](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html) that will transform the source data format into an NGSI-LD entity before publishing it into the STF IoT Queue. 
 
-For example, the steps to build a Data Producer that ingests data from LoRaWAN Parking Lot sensors using a private LoRaWAN Network managed by AWS IoT Core for LoRaWAN are: 
+For example, the steps to build a Data Producer that ingests data from LoRaWAN Parking Lot sensors using a private LoRaWAN Network managed by [AWS IoT Core for LoRaWAN](https://youtu.be/6-ZrdRjqdTk) are: 
 
 -  [Register](#register-your-first-thing-using-the-stf-iot-device-api) your parking lot sensors in the central registry using the STF IoT Service API following the [naming conventions](#naming-conventions).
 - [Onboard](https://docs.aws.amazon.com/iot/latest/developerguide/connect-iot-lorawan-onboard-end-devices.html) your parking lot sensors to AWS IoT Core for LoRaWAN.
