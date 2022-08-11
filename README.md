@@ -61,7 +61,7 @@ The STF Core leverages [Serverless services on AWS](https://aws.amazon.com/serve
 
 - [AWS Fargate](https://aws.amazon.com/fargate/?nc1=h_ls) to easily run and scale the [NEC Scorpio Broker container](https://gallery.ecr.aws/j9u9o5d1/). 
 - [Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/?nc1=h_ls) to automatically start up, shut down, and scale capacity up or down for the PostgreSQL database used by NEC Scorpio Broker. 
-- **[ Coming soon ]** [Amazon MSK Serverless](https://aws.amazon.com/msk/features/msk-serverless/) to make it easy to run the Apache Kafka used by NEC Scorpio Broker without having to manage and scale cluster capacity. **Until Amazon MSK Serverless is still in preview, this stack uses [Amazon MSK](https://aws.amazon.com/msk/)**. 
+- **[ Coming soon ]** [Amazon MSK Serverless](https://aws.amazon.com/msk/features/msk-serverless/) to make it easy to run the Apache Kafka used by NEC Scorpio Broker without having to manage and scale cluster capacity. **For now, this stack uses [Amazon MSK](https://aws.amazon.com/msk/)**. 
 
 <br>
 
