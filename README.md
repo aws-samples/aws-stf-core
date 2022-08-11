@@ -205,7 +205,7 @@ The response is:
 
 __Voilà!__ 
 
-If you are familiar with the FIWARE Context Broker and the NGSI-LD specification, you can skip the next section an go directly to [Register and manage your things using the STF IoT API](#register-and-manage-your-things-using-the-stf-iot-api).
+__If you are familiar with the FIWARE Context Broker and the NGSI-LD specification, you can skip the next section an go directly to [Register and manage your things using the STF IoT API](#register-and-manage-your-things-using-the-stf-iot-api).__
 
 ### Understanding the NGSI-LD Information Model
 
