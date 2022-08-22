@@ -1,10 +1,13 @@
 # Smart Territory Framework Core - STF Core using NEC Scorpio Broker
 
+Version 1.0.0, see [Changelog](./CHANGELOG.md#version-100) for all notable changes made in this version. 
+
 <br>
 
 > :warning: **This stack is for demonstration purposes only. It exposes an API endpoint to the public for testing the Context Broker and the STF IoT Registry. Before using in production, please consider adding a [mechanism for controlling and managing access](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-access-control.html) to this API.** 
 
 <br> 
+
 
 ## Overview 
 
@@ -89,14 +92,13 @@ All measurements and data produced by a device are linked to the registered devi
 
 This gives an exhaustive view in real-time of the state of the device and its measurements providing Digital Twin capabilities. The STF IoT module is synchronized in real-time with the Context Broker so any change that occurs in the STF IoT module is replicated in the Context Broker and stored as well in the STF IoT Data Lake.
 
-The STF IoT Data Lake is built on top of Amazon S3. A bucket named ```stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}``` is created when this stack is deployed. You can use an existing bucket by modifying the STF IoT Data Lake construct ([Link](./lib/stacks/stf-iot/stf-iot-stack.ts) to the file).
+The STF IoT Data Lake is built on top of Amazon S3. A bucket named ```stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}``` is created when this stack is deployed. You can use an existing bucket by modifying the STF IoT Data Lake construct ([Link](./lib/stacks/stf-iot/stf-iot-stack.ts) to the file). 
 
 <br>
 
 ![IoT Data Lake bucket](./docs/images/iotbucket.png)
 
 <br>
-
 
 With a single endpoint, the STF IoT module provides an API for device management in addition to the NGSI-LD FIWARE Context Broker API. 
 Indeed, the STF Core provides a unified API that exposes two services:  
@@ -450,7 +452,28 @@ Finally, with the STF IoT API you can also delete your things in the STF IoT Reg
 
 <br>
 
-If it's all good, you are ready to start building your data producers and data consumers.  
+The entities published into the STF IoT are stored in the STF IoT DataLake via Kinesis Data Firehose using [Dynamic Partitioning](https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html). Dynamic partitioning enables you to continuously partition streaming data in Kinesis Data Firehose by using keys within data (for example the type of the entity) and then deliver the data grouped by these keys into corresponding Amazon Simple Storage Service (Amazon S3) prefixes. 
+
+Entities stored in the STF IoT Datalake are partitioned by `type` and time (`yyyy-MM-dd-HH`).
+
+<br>
+
+![Bucket Partition](./docs/images/bucket_type.png)
+
+<br>
+
+This makes it easier to run high performance, cost-efficient analytics on streaming data in Amazon S3 using various services such as Amazon Athena, Amazon EMR, Amazon Redshift Spectrum, and Amazon QuickSight.
+
+<br>
+
+![Bucket Partition](./docs/images/bucket_time.png)
+
+<br>
+
+
+
+
+It's all good! You are ready to start building your data producers and data consumers.  
 
 ## Building Data Producers and Data Consumers 
 

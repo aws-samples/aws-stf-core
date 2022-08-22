@@ -12,3 +12,5 @@ cdk.out
 
 !install.js 
 !lib/stacks/*/*/*/*/*.js
+
+.DS_Store
