@@ -14,6 +14,7 @@ export class StfScorpioServerlessStack extends NestedStack {
   public readonly dns_context_broker: string 
   public readonly vpc: Vpc
   public readonly broker_api_endpoint: string
+  public readonly api_ref: string
 
   constructor(scope: Construct, id: string, props?: NestedStackProps) {
     super(scope, id, props)
@@ -58,6 +59,7 @@ export class StfScorpioServerlessStack extends NestedStack {
   this.broker_api_endpoint = `https://${api_stack.api_ref}.execute-api.${Aws.REGION}.amazonaws.com`
   this.dns_context_broker = fargate_construct.fargate_alb.loadBalancer.loadBalancerDnsName
   this.vpc = networking_construct.vpc
+  this.api_ref = api_stack.api_ref
 
   new CfnOutput(this, 'fargate_alb', {
     value: fargate_construct.fargate_alb.loadBalancer.loadBalancerDnsName
