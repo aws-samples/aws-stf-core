@@ -25,7 +25,7 @@ export class StfIotStack extends NestedStack {
     const bucket_name = `stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}`
 
     // IF BUCKET ALREADY EXISTS, UNCOMMENT BELOW AND COMMENT IoT BUCKET CREATION
-    //const bucket = Bucket.fromBucketArn(this, 'IoTBucket', bucket_name)
+    // const bucket = Bucket.fromBucketName(this, 'IoTBucket', bucket_name)
 
     // IoT BUCKET CREATION - COMMENT BELOW IF BUCKET ALREADY EXISTS AND UNCOMMENT ABOVE
     const bucket = new Bucket(this, 'BucketStfIotDataLake', { bucketName: bucket_name})
