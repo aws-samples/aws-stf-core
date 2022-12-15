@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## Version 1.1.0 
+
+
+## Amazon RDS for PostgreSQL
+
+Now, you can choose to deploy an Amazon RDS for PostgreSQL database or an Aurora PostgreSQL. By default,the deployment relies on Amazon RDS for PostgreSQL. See the blog [Is Amazon RDS for PostgreSQL or Amazon Aurora PostgreSQL a better choice for me?](https://aws.amazon.com/blogs/database/is-amazon-rds-for-postgresql-or-amazon-aurora-postgresql-a-better-choice-for-me/) for more information. 
+
+You can choose the type of instance and storage you want to use in the parameters file. 
+
+
+## Parameters file
+
+The parameters file [```parameters.ts```](./parameters.ts) provides more options to customise the deployment like the type of instances to use for Amazon RDS (if not using Aurora) and Kafka (in Amazon MSK). 
+
+[tbc with screenshots]
+
+## Fleet Indexing for more NGSI-LD type
+
+Now you can use the api `{StfCoreEndpoint}/iot/index` to add and request the NGSI-LD types used in [Fleet Indexing](https://docs.aws.amazon.com/iot/latest/developerguide/iot-indexing.html). 
+
+[tbc]
 
 ## Version 1.0.0 
 
