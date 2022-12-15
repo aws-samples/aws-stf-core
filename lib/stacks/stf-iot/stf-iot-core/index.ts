@@ -65,19 +65,19 @@ export class StfIotCore extends Construct {
         const layer_lambda_path = `./lib/stacks/stf-iot/layers`
         const layer_lambda = new LayerVersion(this, 'LayerLambda', {
             code: Code.fromAsset(layer_lambda_path),
-            compatibleRuntimes: [Runtime.NODEJS_14_X]
+            compatibleRuntimes: [Runtime.NODEJS_16_X]
         })
 
         // SQS ENTRY POINT 
         const sqs_stf_endpoint = new Queue(this, 'SqsStfEndpoint', {
-            queueName: `StfIoTQueue-${Aws.REGION}`
+            queueName: Parameters.stf_iot.sqs_iot_queue_name
         })
         this.sqs_stf_iot_arn = sqs_stf_endpoint.queueArn
     
         // LAMBDA TO UPDATE DEVICE SHADOW 
         const lambda_update_shadow_path = `${__dirname}/lambda/updateShadow`
         const lambda_update_shadow = new Function(this, 'LambdaUpdateShadow', {
-            runtime: Runtime.NODEJS_14_X,
+            runtime: Runtime.NODEJS_16_X,
             code: Code.fromAsset(lambda_update_shadow_path),
             handler: 'index.handler',
             timeout: Duration.seconds(15),
@@ -85,8 +85,8 @@ export class StfIotCore extends Construct {
             environment: {
                 AWSIOTREGION: Aws.REGION,
                 AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
-                SHADOW_PREFIX: Parameters.shadow_prefix,
-                TIMEOUT: Parameters.timeout
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
+                TIMEOUT: Parameters.stf_iot.timeout
             }
         })
 
@@ -105,7 +105,7 @@ export class StfIotCore extends Construct {
         // ADD PERMISSION TO ACCESS AWS IoT DEVICE SHADOW
         lambda_update_shadow.addToRolePolicy(new PolicyStatement({
             actions: ["iot:UpdateThingShadow"],
-            resources: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:thing/*/${Parameters.shadow_prefix}-*`]
+            resources: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:thing/*/${Parameters.stf_iot.shadow_prefix}-*`]
         }))
 
         // ADD THE SQS ENTRY POINT AS EVENT SOURCE FOR LAMBDA 
@@ -186,7 +186,7 @@ export class StfIotCore extends Construct {
                 ruleDisabled: false,
                 sql: `SELECT current.state.reported.* 
                         FROM '$aws/things/+/shadow/name/+/update/documents' 
-                        WHERE startswith(topic(6), '${Parameters.shadow_prefix}') 
+                        WHERE startswith(topic(6), '${Parameters.stf_iot.shadow_prefix}') 
                         AND NOT isUndefined(current.state.reported.type)`,
                 actions: [ 
                     {
@@ -212,9 +212,9 @@ export class StfIotCore extends Construct {
         const lambda_to_context_broker = new Function(this, 'LambdaUpdateContextBroker', {
             vpc: props.vpc, 
             vpcSubnets: {
-                subnetType: SubnetType.PRIVATE_WITH_NAT
+                subnetType: SubnetType.PRIVATE_WITH_EGRESS
             },
-            runtime: Runtime.NODEJS_14_X,
+            runtime: Runtime.NODEJS_16_X,
             code: Code.fromAsset(lambda_to_context_broker_path),
             handler: 'index.handler',
             timeout: Duration.seconds(15),
@@ -222,11 +222,11 @@ export class StfIotCore extends Construct {
             layers: [layer_lambda],
             environment: {
                 DNS_CONTEXT_BROKER: props.dns_context_broker,
-                URL_SMART_DATA_MODEL: Parameters.smart_data_model_url,
+                URL_SMART_DATA_MODEL: Parameters.stf_iot.smart_data_model_url,
                 AWSIOTREGION: Aws.REGION,
                 AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
-                SHADOW_PREFIX: Parameters.shadow_prefix,
-                TIMEOUT: Parameters.timeout
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
+                TIMEOUT: Parameters.stf_iot.timeout
             }
         })
 
@@ -259,7 +259,7 @@ export class StfIotCore extends Construct {
                 "iot:UpdateThingShadow",
                 "iot:GetThingShadow"
             ],
-            resources: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:thing/*/${Parameters.shadow_prefix}-*`]
+            resources: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:thing/*/${Parameters.stf_iot.shadow_prefix}-*`]
         }))
         
         lambda_to_context_broker.addEventSource(new SqsEventSource(sqs_to_context_broker, { batchSize: 10 }))

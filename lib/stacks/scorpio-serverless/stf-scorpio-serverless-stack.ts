@@ -3,7 +3,7 @@ import { Vpc } from 'aws-cdk-lib/aws-ec2'
 import { Construct } from 'constructs'
 import { Parameters } from '../../../parameters'
 import { ScorpioServerlessApiGateway } from './apigateway'
-import { ScorpioServerlessAurora } from './aurora'
+import { ScorpioDatabase } from './database'
 import { ScorpioServerlessFargate } from './fargate'
 import { ScorpioServerlessKafka } from './kafka'
 import { ScorpioServerlessNetworking } from './networking'
@@ -23,7 +23,7 @@ export class StfScorpioServerlessStack extends NestedStack {
   
   const networking_construct = new ScorpioServerlessNetworking(this, 'NetworkingStack', {})
 
-  const aurora_construct = new ScorpioServerlessAurora(this, 'AuroraStack', {
+  const database_construct = new ScorpioDatabase(this, 'DatabaseStack', {
     vpc: networking_construct.vpc,
     secret_arn: secret_construct.secret.secretArn
   })
@@ -35,15 +35,15 @@ export class StfScorpioServerlessStack extends NestedStack {
   const fargate_construct= new ScorpioServerlessFargate(this, 'FargateStack', {
     vpc: networking_construct.vpc,
     sg_kafka: kafka_construct.sg_kafka,
-    sg_aurora: aurora_construct.sg_aurora,
+    sg_database: database_construct.sg_database,
     secret_arn: secret_construct.secret.secretArn,
-    aurora_cluster_endpoint: aurora_construct.aurora_cluster_endpoint,
-    aurora_cluster_port: aurora_construct.aurora_cluster_port,
+    db_endpoint: database_construct.database_endpoint,
+    db_port: database_construct.database_port,
     kafka_brokers: kafka_construct.kafka_brokers,
-    image_context_broker: Parameters.image_context_broker
+    image_context_broker: Parameters.stf_scorpio.image_context_broker
   })
   fargate_construct.node.addDependency(kafka_construct)
-  fargate_construct.node.addDependency(aurora_construct)
+  fargate_construct.node.addDependency(database_construct)
   fargate_construct.node.addDependency(networking_construct)
   fargate_construct.node.addDependency(secret_construct)
 

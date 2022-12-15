@@ -1,9 +1,9 @@
 import { CfnOutput} from "aws-cdk-lib"
-import { CfnIntegration, CfnRoute, CfnVpcLink } from "aws-cdk-lib/aws-apigatewayv2"
+import { CfnApi, CfnIntegration, CfnRoute, CfnStage, CfnVpcLink } from "aws-cdk-lib/aws-apigatewayv2"
 import { Vpc } from "aws-cdk-lib/aws-ec2"
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns"
-import { CfnHttpApi } from "aws-cdk-lib/aws-sam"
 import { Construct } from "constructs"
+import { Parameters } from "../../../../parameters"
 
 export interface ScorpioServerlessApiGatewayProps {
     readonly vpc: Vpc,
@@ -24,11 +24,27 @@ export class ScorpioServerlessApiGateway extends Construct{
         }
 
         const vpc_link = new CfnVpcLink(this, 'VpcLink', {
-            name: 'scorpio-serverless-vpc-link' , 
+            name: Parameters.vpc_link_name , 
             subnetIds: props.vpc.privateSubnets.map( (m) => m.subnetId)
         })
 
-        const api = new CfnHttpApi(this, 'HttpApi', {})
+        const api = new CfnApi(this, 'HttpApi', {
+            name: 'stfApi', 
+            protocolType: 'HTTP',
+            corsConfiguration: {
+                allowHeaders: ['*'],
+                allowMethods: ['*'],
+                allowOrigins: ['*']
+            },
+            
+
+        })
+
+        const stage = new CfnStage(this, 'StageApi', {
+            apiId: api.ref,
+            stageName: '$default',
+            autoDeploy: true
+        })
 
         const integration = new CfnIntegration(this, 'HttpApiIntegration', {
             apiId: api.ref,

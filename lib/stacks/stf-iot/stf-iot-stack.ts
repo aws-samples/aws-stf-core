@@ -13,8 +13,9 @@ export interface StfIotStackProps extends NestedStackProps {
 }
 
 export class StfIotStack extends NestedStack {
-  // public readonly iot_api_endpoint: string
+
   public readonly iot_sqs_endpoint_arn : string
+
   constructor(scope: Construct, id: string, props: StfIotStackProps) {
     super(scope, id, props)
 
@@ -22,15 +23,14 @@ export class StfIotStack extends NestedStack {
     *  CREATE STF IoT DATALAKE BUCKET 
     */
 
-    const bucket_name = `stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}`
-
-    // IF BUCKET ALREADY EXISTS, UNCOMMENT BELOW AND COMMENT IoT BUCKET CREATION
-    // const bucket = Bucket.fromBucketName(this, 'IoTBucket', bucket_name)
-
-    // IoT BUCKET CREATION - COMMENT BELOW IF BUCKET ALREADY EXISTS AND UNCOMMENT ABOVE
-    const bucket = new Bucket(this, 'BucketStfIotDataLake', { bucketName: bucket_name})
-
-
+    // DEFAULT BUCKET NAME
+    const bucket_name = Parameters.stf_iot.bucket_name
+    let bucket
+    if (Parameters.stf_iot.new_bucket) {
+       bucket = new Bucket(this, 'BucketStfIotDataLake', { bucketName: bucket_name})
+    } else {
+       bucket = Bucket.fromBucketName(this, 'IoTBucket', bucket_name)
+    }
 
     // DEPLOY THE CORE OF STF IoT 
     const stf_iot_core_construct = new StfIotCore(this, 'Core', {

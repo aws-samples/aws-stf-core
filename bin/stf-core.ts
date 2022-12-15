@@ -5,4 +5,6 @@ import { StfCoreStack } from '../lib/stf-core-stack';
 
 const app = new cdk.App();
 
-new StfCoreStack(app, 'StfCore', {})
+new StfCoreStack(app, 'StfCore', {
+    stackName: 'StfCore'
+})

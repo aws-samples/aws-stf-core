@@ -11,13 +11,14 @@ import { Secret } from "aws-cdk-lib/aws-secretsmanager"
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from "aws-cdk-lib/custom-resources"
 
 import { Construct } from "constructs"
+import { Parameters } from "../../../../parameters"
 
 export interface ScorpioServerlessFargateProps {
     vpc: Vpc
     sg_kafka: SecurityGroup,
-    sg_aurora: SecurityGroup,
-    aurora_cluster_endpoint: string,
-    aurora_cluster_port: string,
+    sg_database: SecurityGroup,
+    db_endpoint: string,
+    db_port: string,
     secret_arn: string,
     kafka_brokers: string, 
     image_context_broker: string
@@ -36,14 +37,14 @@ export class ScorpioServerlessFargate extends Construct {
         if (!props.sg_kafka){
             throw new Error('The property sg_kafka is required to create an instance of ScorpioServerlessFargate Construct')
         }
-        if (!props.sg_aurora){
-            throw new Error('The property sg_aurora is required to create an instance of ScorpioServerlessFargate Construct')
+        if (!props.sg_database){
+            throw new Error('The property sg_database is required to create an instance of ScorpioServerlessFargate Construct')
         }
-        if (!props.aurora_cluster_endpoint){
-            throw new Error('The property aurora_cluster_endpoint is required to create an instance of ScorpioServerlessFargate Construct')
+        if (!props.db_endpoint){
+            throw new Error('The property db_endpoint is required to create an instance of ScorpioServerlessFargate Construct')
         }
-        if (!props.aurora_cluster_port){
-            throw new Error('The property aurora_cluster_port is required to create an instance of ScorpioServerlessFargate Construct')
+        if (!props.db_port){
+            throw new Error('The property db_port is required to create an instance of ScorpioServerlessFargate Construct')
         }
         if (!props.secret_arn){
             throw new Error('The property secret_arn is required to create an instance of ScorpioServerlessFargate Construct')
@@ -59,13 +60,17 @@ export class ScorpioServerlessFargate extends Construct {
 
         const sg_fargate = new SecurityGroup(this, 'SecurityGroupScorpio', {vpc: props.vpc})
 
-        const sg_aurora = SecurityGroup.fromSecurityGroupId(this, 'sgAurora', props.sg_aurora.securityGroupId)
+        const sg_database = SecurityGroup.fromSecurityGroupId(this, 'sgAurora', props.sg_database.securityGroupId)
         const sg_kafka = SecurityGroup.fromSecurityGroupId(this, 'sgKafka', props.sg_kafka.securityGroupId)
 
         sg_kafka.addIngressRule(sg_fargate, Port.tcp(9092))
         sg_kafka.addIngressRule(sg_fargate, Port.tcp(9094))
-        sg_aurora.addIngressRule(sg_fargate, Port.tcp(5432))
+        sg_database.addIngressRule(sg_fargate, Port.tcp(5432))
         const fargate_cluster = new Cluster(this, 'FargateScorpioCluster', {vpc: props.vpc})
+
+        if(!Parameters.stf_scorpio.aurora_serverless){
+            sg_database.connections.allowFrom(sg_fargate, Port.tcp(5432))
+        }
 
         const db_pass = SecretValue.secretsManager(secret.secretArn).toJSON()
         
@@ -87,9 +92,9 @@ export class ScorpioServerlessFargate extends Construct {
                     DBUSER: ecsSecret.fromSecretsManager(secret, 'username')
                 },
                 environment: {
-                    DBHOST: props.aurora_cluster_endpoint,
-                    DBPORT: props.aurora_cluster_port,   
-                    DBNAME: 'scorpio',
+                    DBHOST: props.db_endpoint,
+                    DBPORT: props.db_port,   
+                    DBNAME: Parameters.stf_scorpio.dabaseName,
                     BOOTSTRAP_SERVERS: kafka_endpoint
                 },
                 containerPort: 9090,
@@ -105,14 +110,6 @@ export class ScorpioServerlessFargate extends Construct {
         fargate_alb.targetGroup.configureHealthCheck({
             path: '/actuator/health',
             port: '9090'
-        })
-
-        new CfnOutput(this, 'otpa', {
-            value: kafka_endpoint
-        })
-
-        new CfnOutput(this, 'otpb', {
-            value: (Token.asString(kafka_endpoint)).split(',')[0].split(':')[0]
         })
 
     }

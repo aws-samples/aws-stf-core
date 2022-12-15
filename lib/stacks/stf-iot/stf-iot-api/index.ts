@@ -51,7 +51,7 @@ export class StfIotApi extends Construct {
                         "namedShadowIndexingMode": "ON",
                         "filter": {
                             "namedShadowNames": [
-                                `${Parameters.shadow_prefix}-Device`
+                                `${Parameters.stf_iot.shadow_prefix}-Device`
                             ]
                         }
 
@@ -72,7 +72,7 @@ export class StfIotApi extends Construct {
                         "namedShadowIndexingMode": "ON",
                         "filter": {
                             "namedShadowNames": [
-                                `${Parameters.shadow_prefix}-Device`
+                                `${Parameters.stf_iot.shadow_prefix}-Device`
                             ]
                         }
 
@@ -89,7 +89,7 @@ export class StfIotApi extends Construct {
         const layer_lambda_path = `./lib/stacks/stf-iot/layers`
         const layer_lambda = new LayerVersion(this, 'LayerLambda', {
             code: Code.fromAsset(layer_lambda_path),
-            compatibleRuntimes: [Runtime.NODEJS_14_X]
+            compatibleRuntimes: [Runtime.NODEJS_16_X]
         })
 
 // ********************************************** 
@@ -101,15 +101,16 @@ export class StfIotApi extends Construct {
         // LAMBDA THAT POSTS THING
         const lambda_post_thing_path = `${__dirname}/lambda/postThing`
         const lambda_post_thing = new Function(this, 'LambdaPostThing', {
-            runtime: Runtime.NODEJS_14_X,
+            runtime: Runtime.NODEJS_16_X,
             code: Code.fromAsset(lambda_post_thing_path),
             handler: 'index.handler',
             timeout: Duration.seconds(15),
             logRetention: RetentionDays.THREE_MONTHS,
+            layers: [layer_lambda],
             environment: {
                 AWSIOTREGION: Aws.REGION,
                 AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
-                SHADOW_PREFIX: Parameters.shadow_prefix,
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
                 }   
         })
 
@@ -167,9 +168,9 @@ export class StfIotApi extends Construct {
         const lambda_delete_thing = new Function(this, 'LambdaDeleteThing', {
             vpc: props.vpc, 
             vpcSubnets: {
-                subnetType: SubnetType.PRIVATE_WITH_NAT
+                subnetType: SubnetType.PRIVATE_WITH_EGRESS
             },
-            runtime: Runtime.NODEJS_14_X,
+            runtime: Runtime.NODEJS_16_X,
             code: Code.fromAsset(lambda_delete_thing_path),
             handler: 'index.handler',
             timeout: Duration.seconds(15),
@@ -178,9 +179,9 @@ export class StfIotApi extends Construct {
             environment: {
                 AWSIOTREGION: Aws.REGION,
                 AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
-                SHADOW_PREFIX: Parameters.shadow_prefix,
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
                 DNS_CONTEXT_BROKER: props.dns_context_broker,
-                TIMEOUT: Parameters.timeout
+                TIMEOUT: Parameters.stf_iot.timeout
                 }   
         })
 
@@ -233,15 +234,16 @@ export class StfIotApi extends Construct {
         // LAMBDA THAT GETS THING
         const lambda_get_thing_path = `${__dirname}/lambda/getThing`
         const lambda_get_thing = new Function(this, 'LambdaGetThing', {
-            runtime: Runtime.NODEJS_14_X,
+            runtime: Runtime.NODEJS_16_X,
             code: Code.fromAsset(lambda_get_thing_path),
             handler: 'index.handler',
             timeout: Duration.seconds(15),
             logRetention: RetentionDays.THREE_MONTHS,
+            layers: [layer_lambda],
             environment: {
                 AWSIOTREGION: Aws.REGION,
                 AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
-                SHADOW_PREFIX: Parameters.shadow_prefix,
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
                 }   
         })
 
@@ -293,15 +295,16 @@ export class StfIotApi extends Construct {
         // LAMBDA THAT GETS THING
         const lambda_get_things_path = `${__dirname}/lambda/getThings`
         const lambda_get_things = new Function(this, 'LambdaGetThings', {
-            runtime: Runtime.NODEJS_14_X,
+            runtime: Runtime.NODEJS_16_X,
             code: Code.fromAsset(lambda_get_things_path),
             handler: 'index.handler',
             timeout: Duration.seconds(15),
             logRetention: RetentionDays.THREE_MONTHS,
+            layers: [layer_lambda],
             environment: {
                 AWSIOTREGION: Aws.REGION,
                 AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
-                SHADOW_PREFIX: Parameters.shadow_prefix,
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
                 }   
         })
 
@@ -340,6 +343,196 @@ export class StfIotApi extends Construct {
         /**
         *  END GET THINGS
         */
+
+
+
+        /************************************************************************** */
+
+
+        /**
+         *  GET INDEX
+         */
+
+        // LAMBDA THAT GETS IoT INDEX
+        const lambda_get_index_path = `${__dirname}/lambda/getIndex`
+        const lambda_get_index = new Function(this, 'LambdaGetIndex', {
+            runtime: Runtime.NODEJS_16_X,
+            code: Code.fromAsset(lambda_get_index_path),
+            handler: 'index.handler',
+            timeout: Duration.seconds(15),
+            logRetention: RetentionDays.THREE_MONTHS,
+            layers: [layer_lambda],
+            environment: {
+                AWSIOTREGION: Aws.REGION,
+                AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
+                }   
+        })
+
+        lambda_get_index.addToRolePolicy(new PolicyStatement({
+            actions: [
+                "iot:GetIndexingConfiguration"
+            ],
+            resources: ['*']
+        }))
+
+        const get_index_integration = new CfnIntegration(this, 'getIndexIntegration', {
+            apiId: props.api_ref,
+            integrationMethod: "GET",
+            integrationType: "AWS_PROXY",
+            integrationUri: lambda_get_index.functionArn,
+            connectionType: "INTERNET",
+            description: "GET INDEX INTEGRATION",
+            payloadFormatVersion: "1.0",
+        })
+
+        const get_index_route = new CfnRoute(this, 'GetIndexRoute', {
+            apiId: props.api_ref,
+            routeKey: "GET /iot/index",
+            target: `integrations/${get_index_integration.ref}`
+        })
+
+        new CfnPermission(this, 'ApiGatewayLambdaPermissionGetIndex', {
+            principal: `apigateway.amazonaws.com`,
+            action: 'lambda:InvokeFunction',
+            functionName: lambda_get_index.functionName,
+            sourceArn: `arn:aws:execute-api:${Aws.REGION}:${Aws.ACCOUNT_ID}:${props.api_ref}/*/*/*`
+        })
+
+        /**
+        *  END GET INDEX
+        */
+
+
+        /************************************************************************** */
+
+
+        /**
+         *  POST INDEX
+         */
+
+        // LAMBDA THAT POSTS IoT INDEX
+        const lambda_post_index_path = `${__dirname}/lambda/postIndex`
+        const lambda_post_index = new Function(this, 'LambdaPostIndex', {
+            runtime: Runtime.NODEJS_16_X,
+            code: Code.fromAsset(lambda_post_index_path),
+            handler: 'index.handler',
+            timeout: Duration.seconds(15),
+            logRetention: RetentionDays.THREE_MONTHS,
+            layers: [layer_lambda],
+            environment: {
+                AWSIOTREGION: Aws.REGION,
+                AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
+                }   
+        })
+
+        lambda_post_index.addToRolePolicy(new PolicyStatement({
+            actions: [
+                "iot:GetIndexingConfiguration",
+                "iot:UpdateIndexingConfiguration"
+            ],
+            resources: [`*`]
+        }))
+
+        const post_index_integration = new CfnIntegration(this, 'postIndexIntegration', {
+            apiId: props.api_ref,
+            integrationMethod: "POST",
+            integrationType: "AWS_PROXY",
+            integrationUri: lambda_post_index.functionArn,
+            connectionType: "INTERNET",
+            description: "POST INDEX INTEGRATION",
+            payloadFormatVersion: "1.0",
+        })
+
+        const post_index_route = new CfnRoute(this, 'postIndexRoute', {
+            apiId: props.api_ref,
+            routeKey: "POST /iot/index",
+            target: `integrations/${post_index_integration.ref}`
+        })
+
+        new CfnPermission(this, 'ApiGatewayLambdaPermissionPostIndex', {
+            principal: `apigateway.amazonaws.com`,
+            action: 'lambda:InvokeFunction',
+            functionName: lambda_post_index.functionName,
+            sourceArn: `arn:aws:execute-api:${Aws.REGION}:${Aws.ACCOUNT_ID}:${props.api_ref}/*/*/*`
+        })
+
+        /**
+        *  END POST INDEX
+        */
+
+
+
+// ********************************************** 
+
+        /**
+        *  DELETE INDEX 
+        */
+
+        // LAMBDA THAT DELETE INDEX
+        const lambda_delete_index_path = `${__dirname}/lambda/deleteIndex`
+        const lambda_delete_index= new Function(this, 'LambdaDeleteIndex', {
+            vpc: props.vpc, 
+            vpcSubnets: {
+                subnetType: SubnetType.PRIVATE_WITH_EGRESS
+            },
+            runtime: Runtime.NODEJS_16_X,
+            code: Code.fromAsset(lambda_delete_index_path),
+            handler: 'index.handler',
+            timeout: Duration.seconds(15),
+            logRetention: RetentionDays.THREE_MONTHS,
+            layers: [layer_lambda],
+            environment: {
+                AWSIOTREGION: Aws.REGION,
+                AWSIOTENDPOINT: AWS_IOT_ENDPOINT,
+                SHADOW_PREFIX: Parameters.stf_iot.shadow_prefix,
+                }   
+        })
+
+        lambda_delete_index.addToRolePolicy(new PolicyStatement({
+            actions: [
+                "iot:GetIndexingConfiguration",
+                "iot:UpdateIndexingConfiguration"
+
+            ],
+            resources: [`*`]
+        }))
+
+        const delete_index_integration = new CfnIntegration(this, 'deleteIndexIntegration', {
+            apiId: props.api_ref,
+            integrationMethod: "DELETE",
+            integrationType: "AWS_PROXY",
+            integrationUri: lambda_delete_index.functionArn,
+            connectionType: "INTERNET",
+            description: "DELETE INDEX INTEGRATION",
+            payloadFormatVersion: "1.0",
+        })
+
+        const delete_index_route = new CfnRoute(this, 'DeleteIndexRoute', {
+            apiId: props.api_ref,
+            routeKey: "DELETE /iot/index/{index}",
+            target: `integrations/${delete_index_integration.ref}`
+        })
+
+        new CfnPermission(this, 'ApiGatewayLambdaPermissionDeleteIndex', {
+            principal: `apigateway.amazonaws.com`,
+            action: 'lambda:InvokeFunction',
+            functionName: lambda_delete_index.functionName,
+            sourceArn: `arn:aws:execute-api:${Aws.REGION}:${Aws.ACCOUNT_ID}:${props.api_ref}/*/*/*`
+        })
+
+    /***
+     * END DELETE INDEX 
+     */
+
+/************************************************************************** */
+
+
+
+
+
+
 
     }
 }
