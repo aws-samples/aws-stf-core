@@ -27,17 +27,17 @@ export class ScorpioServerlessKafka extends Construct {
         this.sg_kafka = sg_kafka
 
         const kafka_config = new AwsCustomResource(this, 'kafkaConfig', {
-            // onCreate: {
-            //     service: 'Kafka',
-            //     action: 'createConfiguration',
-            //     parameters: {
-            //       Name: kafka_config_name,
-            //       Description: kafka_config_name,
-            //       KafkaVersions: [Parameters.stf_scorpio.kafka_version],
-            //       ServerProperties: `auto.create.topics.enable = true`
-            //     },
-            //     physicalResourceId: PhysicalResourceId.fromResponse('Arn')
-            // },
+            onCreate: {
+                service: 'Kafka',
+                action: 'createConfiguration',
+                parameters: {
+                  Name: kafka_config_name,
+                  Description: kafka_config_name,
+                  KafkaVersions: [Parameters.stf_scorpio.kafka_version],
+                  ServerProperties: `auto.create.topics.enable = true`
+                },
+                physicalResourceId: PhysicalResourceId.fromResponse('Arn')
+            },
             onUpdate: {
                 service: "Kafka",
                 action: "updateConfiguration",
