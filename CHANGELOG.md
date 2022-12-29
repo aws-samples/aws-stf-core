@@ -29,6 +29,18 @@ If you activate Fleet Indexing of named Shadows, you can now use the api `{StfCo
 
 [Note](https://aws.amazon.com/iot-device-management/pricing/) that Index updates are metered in increments of 1 KB. For example, an index update of 1.5KB is metered as two operations. Index updates occur when update your registry, device shadows, or device lifecycle events. For example, if you update a device shadow of 2 KB, your index update will also be 2 KB.
 
+
+### Changes in the Lambda function that updates the Context Broker
+
+The Lambda function that updates the Context Broker uses now the upsert operation `{StfCoreEndpoint}/ngsi-ld/v1/entityOperations/upsert`.
+
+<br>
+
+![Upsert](./docs/images/upsert.png)
+
+<br> 
+
+
 ## Version 1.0.0 
 
 ### STF single endpoint
