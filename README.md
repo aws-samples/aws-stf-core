@@ -2,8 +2,6 @@
 
 Version 1.1.0, see [Changelog](./CHANGELOG.md#version-110) for all notable changes made in this version.
 
-__This README is not yet updated to Version 1.1.0__
-
 <br>
 
 > :warning: **This stack is for demonstration purposes only. It exposes an API endpoint to the public for testing the Context Broker and the STF IoT Registry. Before using in production, please consider adding a [mechanism for controlling and managing access](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-access-control.html) to this API.** 
