@@ -4,7 +4,7 @@ import { AuroraCapacityUnit, StorageType } from "aws-cdk-lib/aws-rds";
 
 export const Parameters = {
     stf_iot: {
-        new_bucket: false, // If true, the stack will create the bucket for the STF IoT DataLake. Set to false if you have already a bucket created. 
+        new_bucket: true, // If true, the stack will create the bucket for the STF IoT DataLake. Set to false if you have already a bucket created. 
         bucket_name: `stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}`, // Default name, change only if needed.
         shadow_prefix: "Stf",
         sqs_iot_queue_name: `StfIoTQueue-${Aws.REGION}`, // Default name, change only if needed.
