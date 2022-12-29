@@ -83,7 +83,7 @@ export class ScorpioServerlessFargate extends Construct {
                 rollback: true
             },
             cpu: 512, 
-            desiredCount: 2, 
+            desiredCount: Parameters.stf_scorpio.fargate_desired_count, 
             publicLoadBalancer: false, 
             taskImageOptions: {
                 image: ContainerImage.fromRegistry(props.image_context_broker),

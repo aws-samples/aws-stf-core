@@ -13,14 +13,14 @@ __This README is not yet updated to Version 1.1.0__
 
 ## Overview 
 
-The Smart Territory Framework - STF - is a set of tools and standardized modules that our partners and customers can assemble together to build and operate sustainable and highly effective solutions. 
+The Smart Territory Framework – STF – is an open-source framework that makes it easier and faster to create and operate interoperable platforms. STF supports the development and integration of smart and efficient solutions across multiple domains such as Smart Cities, Campuses and Regions; Energy and Utilities; Agriculture; Smart Building and Manufacturing.
 
 The STF complies with [NGSI-LD](https://www.etsi.org/technologies/internet-of-things) standard and leverages the NGSI-LD compliant [Smart Data Models](https://smartdatamodels.org/) initiative that provides open-licensed data models for different [domains](https://github.com/smart-data-models/data-models/tree/master/specs) such as Smart Cities, Smart Agrifood, Smart Environment, Smart Sensoring, Smart Energy, Smart Water, Smart Destination, Smart Robotics and Smart Manufacturing.
 
 Modular and built on open source and standards, the STF makes it easy to integrate existing solutions and add new capabilities and modules over time to its **core**. The core of the STF - STF Core - consists of two modules: the STF IoT module and the open-source FIWARE Context Broker.
 
 This repository contains an [AWS CDK](https://aws.amazon.com/cdk) application that enables you to deploy the STF Core stack. The STF Core stack consists of two nested stacks: 
-- a stack to deploy the NEC Scorpio Context Broker (using [Serverless services on AWS](https://aws.amazon.com/serverless/?nc1=h_ls)),
+- a stack to deploy the NEC Scorpio Context Broker,
 - a stack to deploy the STF IoT module.
 
 <br>
@@ -65,8 +65,8 @@ The STF Core leverages [Serverless services on AWS](https://aws.amazon.com/serve
 [NEC Laboratories Europe](https://www.neclab.eu/) and AWS have [worked together]((https://neclab.eu/about-us/press-releases/detail/nec-ngsi-ld-scorpio-broker-selected-for-amazon-web-services-smart-territories-framework)) to provide a scalable and available implementation of the NEC Scorpio Broker 2.0 on AWS using:
 
 - [AWS Fargate](https://aws.amazon.com/fargate/?nc1=h_ls) to easily run and scale the [NEC Scorpio Broker container](https://gallery.ecr.aws/j9u9o5d1/). 
-- [Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/?nc1=h_ls) to automatically start up, shut down, and scale capacity up or down for the PostgreSQL database used by NEC Scorpio Broker. 
-- **[ Coming soon ]** [Amazon MSK Serverless](https://aws.amazon.com/msk/features/msk-serverless/) to make it easy to run the Apache Kafka used by NEC Scorpio Broker without having to manage and scale cluster capacity. **For now, this stack uses [Amazon MSK](https://aws.amazon.com/msk/)**. 
+- [Amazon RDS](https://aws.amazon.com/rds) or [Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/?nc1=h_ls) for the PostgreSQL database used by NEC Scorpio Broker. 
+- [Amazon MSK](https://aws.amazon.com/msk) to make it easy to run the Apache Kafka used by NEC Scorpio Broker. 
 
 <br>
 
@@ -90,11 +90,13 @@ It also consists of an IoT data lake built on [Amazon S3](https://aws.amazon.com
 
 The STF IoT module provides a [central registry](https://docs.aws.amazon.com/iot/latest/developerguide/iot-thing-management.html) to store all your devices following the Smart Data Model [```Device```](https://github.com/smart-data-models/dataModel.Device/blob/master/Device/README.md). 
 
-All measurements and data produced by a device are linked to the registered device and stored in its [Device Shadows](https://docs.aws.amazon.com/iot/latest/developerguide/iot-device-shadows.html) following the relevant data model like for example [```AirQualityObserved```](https://github.com/smart-data-models/dataModel.Environment/blob/master/AirQualityObserved/README.md) for air quality measurements. 
+All measurements and data produced by a device are linked to the registered device and stored in its [Device Shadows](https://docs.aws.amazon.com/iot/latest/developerguide/iot-device-shadows.html) using the relevant data model like for example [```AirQualityObserved```](https://github.com/smart-data-models/dataModel.Environment/blob/master/AirQualityObserved/README.md) for air quality measurements. 
 
 This gives an exhaustive view in real-time of the state of the device and its measurements providing Digital Twin capabilities. The STF IoT module is synchronized in real-time with the Context Broker so any change that occurs in the STF IoT module is replicated in the Context Broker and stored as well in the STF IoT Data Lake.
 
-The STF IoT Data Lake is built on top of Amazon S3. A bucket named ```stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}``` is created when this stack is deployed. You can use an existing bucket by modifying the STF IoT Data Lake construct ([Link](./lib/stacks/stf-iot/stf-iot-stack.ts) to the file). 
+The STF IoT Data Lake is built on top of Amazon S3. 
+
+A bucket named ```stf-iot-datalake-${Aws.REGION}-${Aws.ACCOUNT_ID}``` is created when this stack is deployed. You can use an existing bucket by setting the `new_bucket` property to `false` (and if not default name used, type the name of the bucket in the property `bucket_name`) in the file [```parameters.ts```](./parameters.ts). 
 
 <br>
 
@@ -103,6 +105,7 @@ The STF IoT Data Lake is built on top of Amazon S3. A bucket named ```stf-iot-da
 <br>
 
 With a single endpoint, the STF IoT module provides an API for device management in addition to the NGSI-LD FIWARE Context Broker API. 
+
 Indeed, the STF Core provides a unified API that exposes two services:  
 - the NGSI-LD FIWARE API to interact with the FIWARE Context Broker
 - the STF IoT API to provision and manage your things in the STF IoT Registry. 
@@ -121,7 +124,13 @@ See [How to use it](##how-to-use-it) section for more details on how to use the 
 
 This repository contains an AWS CDK application that enables you to deploy and provision the STF Core stack code and its supporting infrastructure. AWS CDK provisions your resources in a safe, repeatable manner through AWS CloudFormation. 
 
-The application includes a file [```parameters.ts```](./parameters.ts) in which some configuration parameters are set like the Scorpio Broker container image URL. 
+The application includes a file [```parameters.ts```](./parameters.ts) in which you can configure the resources that you will deploy like the type and size of instances to use for the database and kafka. The default parameters will provide you with a scalable and available platform. 
+
+*You can see an __estimate__ of the monthly cost of running it following this [AWS Pricing calculator estimate](https://calculator.aws/#/estimate?id=9a9ac8992aa3e95007b64ee63281a90ffb0932b8).
+The AWS Pricing Calculator is an estimation tool that provides an __approximate cost__ of using AWS services based on the usage parameters that you specify. The AWS Pricing Calculator is not a quote tool, and does not guarantee the cost for your actual use of AWS services. The cost estimated by the AWS Pricing Calculator may vary from your actual costs for a number of reasons. 
+__This estimation does not include messaging costs.__*
+
+
 
 <br>
 
@@ -297,7 +306,7 @@ In this section, you will use the tool [Postman](https://www.postman.com/product
 
 You will use the Context Broker service of the STF Core unified API to create your first entity in the Context Broker.
 
-For CRUD (Create, Read, Update and Delete) operations on entities, the endpoint `{StfCoreEndpoint}/ngsi-ld/v1/entities` is used (SEE [NGSI-LD API definition](https://forge.etsi.org/swagger/ui/?url=https://forge.etsi.org/rep/NGSI-LD/NGSI-LD/raw/master/spec/updated/generated/full_api.json)). 
+For CRUD (Create, Read, Update and Delete) operations on entities, the endpoint `{StfCoreEndpoint}/ngsi-ld/v1/entities` is used (See [NGSI-LD API definition](https://forge.etsi.org/swagger/ui/?url=https://forge.etsi.org/rep/NGSI-LD/NGSI-LD/raw/master/spec/updated/generated/full_api.json)). 
 
 When using the `POST` method, you can provide the `@context` in the payload, as shown above, or in the HTTP headers:  
 ```
@@ -415,17 +424,19 @@ Now you can check that this entity has been created in the Context Broker as wel
 
 <br>
 
-You can see in the screenshot above that the `Fleet indexing status` of the named shadow `Stf-Device` is `indexed`. The STF Core stack enables [Fleet Indexing](https://docs.aws.amazon.com/iot/latest/developerguide/iot-indexing.html) for the named shadow `Stf-Devices` so you can list all the things registered in the registry with a single query. 
+*You can see in the screenshot above that the `Fleet indexing status` of the named shadow `Stf-Device` is `indexed`. Before version [1.1.O](./CHANGELOG.md#version-110), [Fleet Indexing](https://docs.aws.amazon.com/iot/latest/developerguide/iot-indexing.html) of the named shadows `Stf-Device`was enabled by default so when you listed all the things registered in the registry, you also got their named shadow `Stf-Device`. Now, it is disabled by default, so querying the list would only give you the list of things registered and not their entities. You can get the list of all entities of type `Device` directly from the Context Broker with the request `/ngsi-ld/v1/entities/?type=Device&limit=1000&offset=0`. If you need Fleet Indexing of named shadows, you can set the property `shadow_indexing`to true in the file [```parameters.ts```](./parameters.ts). Fleet Indexing will incur [costs](https://aws.amazon.com/iot-device-management/pricing/).* 
 
 <br>
 
-You can query `{StfCoreEndpoint}/iot/things` to get this list of all the things registered including their named shadow `Stf-Device`. 
+You can query `{StfCoreEndpoint}/iot/things` to get this list of all the things registered. If Fleet Indexing is enabled, this includes their named shadow `Stf-Device` in the property `entity`.
 
 <br>
 
 ![Post Shadow](./docs/images/listthings.png)
 
 <br>
+
+If Fleet Indexing is not enabled, the property `entity` will be an empty object.
 
 With the single query `{StfCoreEndpoint}/iot/things/{thingName}`, you can also get all the entities associated to the thing.
 

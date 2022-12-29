@@ -38,49 +38,48 @@ export class StfIotApi extends Construct {
         const AWS_IOT_ENDPOINT = get_iot_endpoint.getResponseField('endpointAddress')
 
         // ENABLE FLEET INDEXING
+        let fleet_param 
+        if(Parameters.stf_iot.shadow_indexing){
+            fleet_param = {
+                "thingIndexingConfiguration": {
+                    "thingIndexingMode": "REGISTRY_AND_SHADOW",
+                    "namedShadowIndexingMode": "ON",
+                    "filter": {
+                        "namedShadowNames": [
+                            `${Parameters.stf_iot.shadow_prefix}-Device`
+                        ]
+                    }
+    
+                },
+                "thingGroupIndexingConfiguration": {
+                    "thingGroupIndexingMode": "ON"
+                }
+            }
+        } else {
+            fleet_param = {
+                "thingIndexingConfiguration": {
+                    "thingIndexingMode": "REGISTRY"
+                },
+                "thingGroupIndexingConfiguration": {
+                    "thingGroupIndexingMode": "ON"
+                }
+            }
+        }
+
+
 
         const fleet_indexing = new AwsCustomResource(this, 'IoTFleetIndexing', {
             onCreate: {
                 service: 'Iot',
                 action: 'updateIndexingConfiguration',
                 physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
-                parameters: {
-                    "thingIndexingConfiguration": {
-                        "thingIndexingMode": "REGISTRY_AND_SHADOW",
-                        "thingConnectivityIndexingMode": "STATUS",
-                        "namedShadowIndexingMode": "ON",
-                        "filter": {
-                            "namedShadowNames": [
-                                `${Parameters.stf_iot.shadow_prefix}-Device`
-                            ]
-                        }
-
-                    },
-                    "thingGroupIndexingConfiguration": {
-                        "thingGroupIndexingMode": "ON"
-                    }
-                }
+                parameters: fleet_param
               },
               onUpdate: {
                 service: 'Iot',
                 action: 'updateIndexingConfiguration',
                 physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
-                parameters: {
-                    "thingIndexingConfiguration": {
-                        "thingIndexingMode": "REGISTRY_AND_SHADOW",
-                        "thingConnectivityIndexingMode": "STATUS",
-                        "namedShadowIndexingMode": "ON",
-                        "filter": {
-                            "namedShadowNames": [
-                                `${Parameters.stf_iot.shadow_prefix}-Device`
-                            ]
-                        }
-
-                    },
-                    "thingGroupIndexingConfiguration": {
-                        "thingGroupIndexingMode": "ON"
-                    }
-                }
+                parameters: fleet_param
               },
               policy: AwsCustomResourcePolicy.fromSdkCalls({resources: AwsCustomResourcePolicy.ANY_RESOURCE})
         })

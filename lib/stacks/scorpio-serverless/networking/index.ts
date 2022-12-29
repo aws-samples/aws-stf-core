@@ -16,6 +16,7 @@ export class ScorpioServerlessNetworking extends Construct{
 
         // VPC 
         const vpc = new Vpc(this, 'VpcStfScorpioServerless', {
+            natGateways: 1, 
             subnetConfiguration: [
                 {
                     subnetType: SubnetType.PRIVATE_WITH_EGRESS,
