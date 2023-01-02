@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Parameters file
 
-The parameters file [```parameters.ts```](./parameters.ts) provides more options to customise the deployment like the type of instances to use for Amazon RDS (if not using Aurora) and Kafka (in Amazon MSK). 
+The parameters file [```parameters.ts```](./parameters.ts) provides more configuration options to customise the deployment like the type of instances to use for Amazon RDS (if not using Aurora) and Kafka (in Amazon MSK). 
 
 <br>
 
@@ -16,14 +16,14 @@ The parameters file [```parameters.ts```](./parameters.ts) provides more options
 
 ### Amazon RDS for PostgreSQL
 
-Now, you can choose to deploy an Amazon RDS for PostgreSQL database or an Aurora PostgreSQL. By default,the deployment relies on Amazon RDS for PostgreSQL. See the blog [Is Amazon RDS for PostgreSQL or Amazon Aurora PostgreSQL a better choice for me?](https://aws.amazon.com/blogs/database/is-amazon-rds-for-postgresql-or-amazon-aurora-postgresql-a-better-choice-for-me/) for more information. 
+Now, you can choose to deploy an Amazon RDS for PostgreSQL database or an Amazon Aurora PostgreSQL database. By default,the deployment relies on Amazon RDS for PostgreSQL. See the blog "[Is Amazon RDS for PostgreSQL or Amazon Aurora PostgreSQL a better choice for me?](https://aws.amazon.com/blogs/database/is-amazon-rds-for-postgresql-or-amazon-aurora-postgresql-a-better-choice-for-me/)" for more information. 
 
 You can choose the type of instance and storage you want to use in the [```parameters.ts```](./parameters.ts) file. 
 
 
 ### Fleet Indexing
 
-Since version 1.1.0, [Fleet Indexing](https://docs.aws.amazon.com/iot/latest/developerguide/iot-indexing.html) of named shadows `Stf-Device` is disabled by default, so querying the list would only give you the list of things registered and not their entities. You can get the list of all entities of type `Device` directly from the Context Broker with the request `/ngsi-ld/v1/entities/?type=Device&limit=1000&offset=0`. If you need Fleet Indexing of named shadows, you can set the property `shadow_indexing`to true in the file [```parameters.ts```](./parameters.ts). Fleet Indexing will incur [costs](https://aws.amazon.com/iot-device-management/pricing/).
+Since version 1.1.0, [Fleet Indexing](https://docs.aws.amazon.com/iot/latest/developerguide/iot-indexing.html) of named shadows `Stf-Device` is disabled by default. So, querying the list would only give you the list of things registered and not their entities. You can get the list of all entities of type `Device` directly from the Context Broker with the request `/ngsi-ld/v1/entities/?type=Device&limit=1000&offset=0`. If you need Fleet Indexing of named shadows, you can set the property `shadow_indexing` to true in the file [```parameters.ts```](./parameters.ts). __Fleet Indexing will incur [costs](https://aws.amazon.com/iot-device-management/pricing/).__
 
 If you activate Fleet Indexing of named Shadows, you can now use the api `{StfCoreEndpoint}/iot/index` to add and request the NGSI-LD types used in [Fleet Indexing](https://docs.aws.amazon.com/iot/latest/developerguide/iot-indexing.html). 
 

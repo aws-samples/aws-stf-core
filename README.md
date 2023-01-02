@@ -8,17 +8,16 @@ Version 1.1.0, see [Changelog](./CHANGELOG.md#version-110) for all notable chang
 
 <br> 
 
-
 ## Overview 
 
 The Smart Territory Framework – STF – is an open-source framework that makes it easier and faster to create and operate interoperable platforms. STF supports the development and integration of smart and efficient solutions across multiple domains such as Smart Cities, Campuses and Regions; Energy and Utilities; Agriculture; Smart Building and Manufacturing.
 
-The STF complies with [NGSI-LD](https://www.etsi.org/technologies/internet-of-things) standard and leverages the NGSI-LD compliant [Smart Data Models](https://smartdatamodels.org/) initiative that provides open-licensed data models for different [domains](https://github.com/smart-data-models/data-models/tree/master/specs) such as Smart Cities, Smart Agrifood, Smart Environment, Smart Sensoring, Smart Energy, Smart Water, Smart Destination, Smart Robotics and Smart Manufacturing.
+The STF complies with the [NGSI-LD](https://www.etsi.org/technologies/internet-of-things) open standard and leverages the NGSI-LD compliant [Smart Data Models](https://smartdatamodels.org/) initiative that provides open-licensed data models for different [domains](https://github.com/smart-data-models/data-models/tree/master/specs) such as Smart Cities, Smart Agrifood, Smart Environment, Smart Sensoring, Smart Energy, Smart Water, Smart Destination, Smart Robotics and Smart Manufacturing.
 
 Modular and built on open source and standards, the STF makes it easy to integrate existing solutions and add new capabilities and modules over time to its **core**. The core of the STF - STF Core - consists of two modules: the STF IoT module and the open-source FIWARE Context Broker.
 
 This repository contains an [AWS CDK](https://aws.amazon.com/cdk) application that enables you to deploy the STF Core stack. The STF Core stack consists of two nested stacks: 
-- a stack to deploy the NEC Scorpio Context Broker,
+- a stack to deploy a FIWARE Context Broker,
 - a stack to deploy the STF IoT module.
 
 <br>
@@ -54,7 +53,7 @@ The Context broker is an open source component that enables the connection and i
 
 Using the Context Broker territories can assemble and store information from different systems, eventually belonging to different organisations, instead of having them perform in separate silos. 
 
-It provides geo-located queries capabilities as well as a subscription mechanism enabling an independent module like a mobile application to query data filtered by geographical location but also to be notified with a given frequency or when changes on data take place (e.g., an air quality measurement is above a specified threshold value).
+It provides geo-located query capabilities as well as a subscription mechanism enabling an independent module like a mobile application to query data filtered by geographical location but also to be notified with a given frequency or when changes on data take place (e.g., an air quality measurement is above a specified threshold value).
 
 Among the [multiple implementations](https://www.fiware.org/developers/catalogue/) of the FIWARE Context Broker available, we have selected the NEC Scorpio Broker 2.0 for this CDK application. The NEC Scorpio Broker 2.0 fully complies with the NGSI-LD specification (ETSI NGSI-LD 1.3.1). 
 
@@ -63,8 +62,8 @@ The STF Core leverages [Serverless services on AWS](https://aws.amazon.com/serve
 [NEC Laboratories Europe](https://www.neclab.eu/) and AWS have [worked together]((https://neclab.eu/about-us/press-releases/detail/nec-ngsi-ld-scorpio-broker-selected-for-amazon-web-services-smart-territories-framework)) to provide a scalable and available implementation of the NEC Scorpio Broker 2.0 on AWS using:
 
 - [AWS Fargate](https://aws.amazon.com/fargate/?nc1=h_ls) to easily run and scale the [NEC Scorpio Broker container](https://gallery.ecr.aws/j9u9o5d1/). 
-- [Amazon RDS](https://aws.amazon.com/rds) or [Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/?nc1=h_ls) for the PostgreSQL database used by NEC Scorpio Broker. 
-- [Amazon MSK](https://aws.amazon.com/msk) to make it easy to run the Apache Kafka used by NEC Scorpio Broker. 
+- [Amazon RDS](https://aws.amazon.com/rds) or [Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/?nc1=h_ls) for the PostgreSQL database used by the NEC Scorpio Broker. 
+- [Amazon MSK](https://aws.amazon.com/msk) to make it easy to run the Apache Kafka used by the NEC Scorpio Broker. 
 
 <br>
 
@@ -124,7 +123,7 @@ This repository contains an AWS CDK application that enables you to deploy and p
 
 The application includes a file [```parameters.ts```](./parameters.ts) in which you can configure the resources that you will deploy like the type and size of instances to use for the database and kafka. The default parameters will provide you with a scalable and available platform. 
 
-*You can see an __estimate__ of the monthly cost of running it following this [AWS Pricing calculator estimate](https://calculator.aws/#/estimate?id=9a9ac8992aa3e95007b64ee63281a90ffb0932b8).
+*You can see an __estimate__ of the monthly cost of running it following this [AWS Pricing calculator estimate](https://calculator.aws/#/estimate?id=9a9ac8992aa3e95007b64ee63281a90ffb0932b8). This estimate does not include messaging costs.
 The AWS Pricing Calculator is an estimation tool that provides an __approximate cost__ of using AWS services based on the usage parameters that you specify. The AWS Pricing Calculator is not a quote tool, and does not guarantee the cost for your actual use of AWS services. The cost estimated by the AWS Pricing Calculator may vary from your actual costs for a number of reasons. 
 __This estimation does not include messaging costs.__*
 
