@@ -146,6 +146,10 @@ __These estimations do not include messaging costs.__*
 
 <br> 
 
+> Make sure that all the AWS services used in this stack are available in the region you deploy in. You can check [here](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/). 
+
+<br> 
+
 Once the Context Broker selected and the configuration parameters checked, you can deploy the application using the following commands: 
 
 <br>

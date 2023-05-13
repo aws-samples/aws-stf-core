@@ -7,47 +7,39 @@ import { StfCoreOrionFargate } from "./fargate";
 import { Parameters } from "../../../parameters";
 import { Vpc } from "aws-cdk-lib/aws-ec2";
 import { StfCoreApiGateway } from "../stf-core-constructs/apigateway";
+import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 
-
+export interface StfCoreOrionProps extends NestedStackProps{
+  vpc: Vpc,
+  secret: Secret
+}
 
 export class StfCoreOrion extends NestedStack {
 
   public readonly dns_context_broker: string
-  public readonly vpc: Vpc
   public readonly broker_api_endpoint: string
   public readonly api_ref: string
 
-  constructor(scope: Construct, id: string, props?: NestedStackProps) {
+  constructor(scope: Construct, id: string, props: StfCoreOrionProps) {
     super(scope, id, props)
 
-    const secret_construct = new StfCoreSecret(this, "SecretStack", {});
-
-    const networking_construct = new StfCoreNetworking(
-      this,
-      "NetworkingStack",
-      {}
-    );
 
     const database_construct = new StfCoreOrionDatabase(this, "DatabaseStack", {
-      vpc: networking_construct.vpc,
-      secret_arn: secret_construct.secret.secretArn,
+      vpc: props.vpc,
+      secret_arn: props.secret.secretArn,
     })
 
     const fargate_construct = new StfCoreOrionFargate( this, "FargateStack", {
-        vpc: networking_construct.vpc,
+        vpc: props.vpc,
         sg_database: database_construct.sg_database,
-        secret_arn: secret_construct.secret.secretArn,
+        secret_arn: props.secret.secretArn,
         db_endpoint: database_construct.db_socket_address,
         image_context_broker: Parameters.stf_orion.image_context_broker,
       }
     )
 
-    // fargate_construct.node.addDependency(database_construct);
-    // fargate_construct.node.addDependency(networking_construct);
-    // fargate_construct.node.addDependency(secret_construct);
-
     const api_stack = new StfCoreApiGateway(this, "Api", {
-      vpc: networking_construct.vpc,
+      vpc: props.vpc,
       fargate_alb: fargate_construct.fargate_alb,
     })
 
@@ -58,7 +50,6 @@ export class StfCoreOrion extends NestedStack {
     this.broker_api_endpoint = `https://${api_stack.api_ref}.execute-api.${Aws.REGION}.amazonaws.com`;
     this.dns_context_broker =
       fargate_construct.fargate_alb.loadBalancer.loadBalancerDnsName;
-    this.vpc = networking_construct.vpc;
     this.api_ref = api_stack.api_ref;
 
     new CfnOutput(this, "fargate_alb", {

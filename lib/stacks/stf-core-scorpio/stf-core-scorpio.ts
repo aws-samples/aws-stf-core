@@ -8,6 +8,13 @@ import { StfCoreScorpioFargate } from "./fargate";
 import { StfCoreScorpioKafka } from "./kafka";
 import { StfCoreNetworking } from "../stf-core-constructs/networking";
 import { StfCoreSecret } from "../stf-core-constructs/secret";
+import { Secret } from "aws-cdk-lib/aws-secretsmanager";
+
+
+export interface StfCoreScorpioProps extends NestedStackProps{
+  vpc: Vpc,
+  secret: Secret
+}
 
 export class StfCoreScorpio extends NestedStack {
   public readonly dns_context_broker: string;
@@ -15,34 +22,26 @@ export class StfCoreScorpio extends NestedStack {
   public readonly broker_api_endpoint: string;
   public readonly api_ref: string;
 
-  constructor(scope: Construct, id: string, props?: NestedStackProps) {
+  constructor(scope: Construct, id: string, props: StfCoreScorpioProps) {
     super(scope, id, props);
 
-    const secret_construct = new StfCoreSecret(this, "SecretStack", {});
-
-    const networking_construct = new StfCoreNetworking(
-      this,
-      "NetworkingStack",
-      {}
-    );
-
     const database_construct = new StfCoreScorpioDatabase(this, "DatabaseStack", {
-      vpc: networking_construct.vpc,
-      secret_arn: secret_construct.secret.secretArn,
+      vpc: props.vpc,
+      secret_arn: props.secret.secretArn,
     });
 
     const kafka_construct = new StfCoreScorpioKafka(this, "KafkaStack", {
-      vpc: networking_construct.vpc,
+      vpc: props.vpc,
     });
 
     const fargate_construct = new StfCoreScorpioFargate(
       this,
       "FargateStack",
       {
-        vpc: networking_construct.vpc,
+        vpc: props.vpc,
         sg_kafka: kafka_construct.sg_kafka,
         sg_database: database_construct.sg_database,
-        secret_arn: secret_construct.secret.secretArn,
+        secret_arn: props.secret.secretArn,
         db_endpoint: database_construct.database_endpoint,
         db_port: database_construct.database_port,
         kafka_brokers: kafka_construct.kafka_brokers,
@@ -51,11 +50,9 @@ export class StfCoreScorpio extends NestedStack {
     );
     fargate_construct.node.addDependency(kafka_construct)
     fargate_construct.node.addDependency(database_construct)
-    fargate_construct.node.addDependency(networking_construct)
-    fargate_construct.node.addDependency(secret_construct)
 
     const api_stack = new StfCoreApiGateway(this, "Api", {
-      vpc: networking_construct.vpc,
+      vpc: props.vpc,
       fargate_alb: fargate_construct.fargate_alb,
     });
 
@@ -66,7 +63,7 @@ export class StfCoreScorpio extends NestedStack {
     this.broker_api_endpoint = `https://${api_stack.api_ref}.execute-api.${Aws.REGION}.amazonaws.com`;
     this.dns_context_broker =
       fargate_construct.fargate_alb.loadBalancer.loadBalancerDnsName;
-    this.vpc = networking_construct.vpc;
+    this.vpc = props.vpc;
     this.api_ref = api_stack.api_ref;
 
     new CfnOutput(this, "fargate_alb", {

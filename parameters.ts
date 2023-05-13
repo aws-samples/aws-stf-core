@@ -9,7 +9,7 @@ enum Broker {
 }
 
 export const Parameters = {
-    stf_broker: Broker.Scorpio, // choose between enum Broker value (Orion or Scorpio) 
+    stf_broker: Broker.Orion, // choose between enum Broker value (Orion or Scorpio) 
     vpc_link_name: 'stf-vpc-link', 
 
     // Parameters for the the STF IoT module
@@ -25,7 +25,7 @@ export const Parameters = {
 
     // Parameters for the Scorpio Broker
     stf_scorpio: {
-        image_context_broker: 'public.ecr.aws/scorpiobroker/scorpio-aio:latest', // Link to ECR Public gallery of Scorpio Broker image.
+        image_context_broker: 'public.ecr.aws/smart-territory-framework/scorpio:latest', // Link to ECR Public gallery of Scorpio Broker image.
         rds_instance_type: InstanceType.of( InstanceClass.BURSTABLE4_GRAVITON, InstanceSize.SMALL), // see https://aws.amazon.com/rds/instance-types/
         rds_storage_type: StorageType.GP3, // see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html
         dbname: 'scorpio',
@@ -44,7 +44,7 @@ export const Parameters = {
     },
     // Parameters for the Orion-LD Broker
     stf_orion: {
-        image_context_broker: 'fiware/orion-ld',
+        image_context_broker: 'public.ecr.aws/smart-territory-framework/orionld:latest',
         docdb_instance_type: InstanceType.of( InstanceClass.BURSTABLE4_GRAVITON, InstanceSize.MEDIUM), // https://docs.aws.amazon.com/documentdb/latest/developerguide/db-instance-classes.html 
         docdb_nb_instances: 2,
         fargate_desired_count: 2

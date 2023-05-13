@@ -10,6 +10,8 @@ Repository renamed aws-stf-core (instead of aws-stf-core-scorpio).
 Introducing the support of [Orion-LD Context Broker](https://github.com/FIWARE/context.Orion-LD) and merging in this repository, all implementations of the FIWARE Context Broker supported with STF.
 <br> 
 Adding parameter options for configuring Orion-LD
+<br>
+Adding a mechanism to ensure the stack is deployed in AZs that support VPC links for HTTP APIs as [https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vpc-links.html#http-api-vpc-link-availability](List of AZs that support VPC links for HTTP APIs as https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vpc-links.html#http-api-vpc-link-availability)
 
 ## Version 1.1.0 
 
