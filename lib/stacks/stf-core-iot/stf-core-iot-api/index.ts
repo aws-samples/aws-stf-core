@@ -91,6 +91,60 @@ export class StfIotApi extends Construct {
             compatibleRuntimes: [Runtime.NODEJS_16_X]
         })
 
+
+// ********************************************** 
+
+        /**
+         *  STF VERSION 
+         */
+
+        // LAMBDA STF API VERSION
+        const lambda_stf_version_path = `${__dirname}/lambda/stfVersion`
+        const lambda_stf_version = new Function(this, 'LambdaStfVersion', {
+            runtime: Runtime.NODEJS_16_X,
+            code: Code.fromAsset(lambda_stf_version_path),
+            handler: 'index.handler',
+            timeout: Duration.seconds(15),
+            logRetention: RetentionDays.THREE_MONTHS,
+            layers: [layer_lambda],
+            environment: {
+                CONTEXT_BROKER: Parameters.stf_broker,
+                STF_VERSION: Parameters.stf_version
+                }   
+        })
+
+        const stf_version_integration = new CfnIntegration(this, 'StfVersionIntegration', {
+            apiId: props.api_ref,
+            integrationMethod: "GET",
+            integrationType: "AWS_PROXY",
+            integrationUri: lambda_stf_version.functionArn,
+            connectionType: "INTERNET",
+            description: "STF VERSION INTEGRATION",
+            payloadFormatVersion: "1.0",
+        })
+
+        const stf_version_route = new CfnRoute(this, 'StfVersionRoute', {
+            apiId: props.api_ref,
+            routeKey: "GET /",
+            target: `integrations/${stf_version_integration.ref}`
+        })
+
+        new CfnPermission(this, 'ApiGatewayLambdaPermissionStfVersion', {
+            principal: `apigateway.amazonaws.com`,
+            action: 'lambda:InvokeFunction',
+            functionName: lambda_stf_version.functionName,
+            sourceArn: `arn:aws:execute-api:${Aws.REGION}:${Aws.ACCOUNT_ID}:${props.api_ref}/*/*/*`
+        })
+
+        /**
+        *  END POST THING 
+        */
+
+
+// ********************************************** 
+
+
+
 // ********************************************** 
 
         /**

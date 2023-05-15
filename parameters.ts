@@ -9,6 +9,7 @@ enum Broker {
 }
 
 export const Parameters = {
+    stf_version: "1.2.0", // Do not change
     stf_broker: Broker.Orion, // choose between enum Broker value (Orion or Scorpio) 
     vpc_link_name: 'stf-vpc-link', 
 

@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## Version 1.1.0 
+## Version 1.2.0 
 
 Introducing the support of [Orion-LD Context Broker](https://github.com/FIWARE/context.Orion-LD) and merging in this repository, all implementations of the FIWARE Context Broker supported with STF. Repository is renamed aws-stf-core (instead of aws-stf-core-scorpio).
 

@@ -1,6 +1,6 @@
 # Smart Territory Framework Core - STF Core
 
-Version 1.1.0, see [Changelog](./CHANGELOG.md#version-110) for all notable changes made in this version.
+Version 1.2.0, see [Changelog](./CHANGELOG.md#version-120) for all notable changes made in this version.
 
 <br>
 
