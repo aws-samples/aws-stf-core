@@ -5,13 +5,21 @@ All notable changes to this project will be documented in this file.
 
 ## Version 1.1.0 
 
-Repository renamed aws-stf-core (instead of aws-stf-core-scorpio).
-<br>
-Introducing the support of [Orion-LD Context Broker](https://github.com/FIWARE/context.Orion-LD) and merging in this repository, all implementations of the FIWARE Context Broker supported with STF.
+Introducing the support of [Orion-LD Context Broker](https://github.com/FIWARE/context.Orion-LD) and merging in this repository, all implementations of the FIWARE Context Broker supported with STF. Repository is renamed aws-stf-core (instead of aws-stf-core-scorpio).
+
 <br> 
+
 Adding parameter options for configuring Orion-LD
+
 <br>
-Adding a mechanism to ensure the stack is deployed in AZs that support VPC links for HTTP APIs as [https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vpc-links.html#http-api-vpc-link-availability](List of AZs that support VPC links for HTTP APIs as https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vpc-links.html#http-api-vpc-link-availability)
+
+Adding a [mechanism](./lib/stacks/stf-core-constructs/utils/index.ts) to ensure the stack is deployed in AZs that support VPC links for HTTP APIs as [https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vpc-links.html#http-api-vpc-link-availability](List of AZs that support VPC links for HTTP APIs as https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vpc-links.html#http-api-vpc-link-availability)
+
+<br> 
+
+Adding sections in the README about [geospatial capabilities](./README.md#geospatial-capabilities) and [NGSI-LD](./README.md#ngsi-ld-subscriptions) 
+
+<br> 
 
 ## Version 1.1.0 
 
