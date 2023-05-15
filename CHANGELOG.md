@@ -21,6 +21,8 @@ Adding sections in the README about [geospatial capabilities](./README.md#geospa
 
 <br> 
 
+Point image context brokers to the [Smart Territory Framework ECR Public gallery](https://gallery.ecr.aws/smart-territory-framework/). 
+
 ## Version 1.1.0 
 
 ### Parameters file
