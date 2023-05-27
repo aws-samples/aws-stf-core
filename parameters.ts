@@ -9,6 +9,7 @@ enum Broker {
 }
 
 export const Parameters = {
+    aws_region: "eu-west-1", // see regions in which you can deploy the STF: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vpc-links.html#http-api-vpc-link-availability
     stf_version: "1.2.0", // Do not change
     stf_broker: Broker.Scorpio, // choose between enum Broker value (Orion or Scorpio) 
     vpc_link_name: 'stf-vpc-link', 

@@ -14,7 +14,11 @@ export class Utils extends Construct {
 
     constructor(scope: Construct, id: string, props?: StfUtilProps) {
         super(scope, id)
-       
+        
+        if(Stack.of(this).region.startsWith('$')){
+          throw new Error('Please type a valid region in the parameter.ts file')
+        }
+
         if(!azlist[`${Stack.of(this).region}`]){
             throw new Error('The stack is not yet available in the region selected')
           }

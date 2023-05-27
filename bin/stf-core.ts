@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-import * as cdk from 'aws-cdk-lib';
+import { App } from 'aws-cdk-lib';
 import { StfCoreStack } from '../lib/stf-core-stack';
+import { Parameters } from '../parameters';
 
-const app = new cdk.App();
+const app = new App();
 
 new StfCoreStack(app, 'StfCore', {
-    stackName: 'StfCore'
+    stackName: 'StfCore',
+    env: { region: Parameters.aws_region }
 })

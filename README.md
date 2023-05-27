@@ -132,7 +132,8 @@ See [How to use it](##how-to-use-it) section for more details on how to use the 
 
 This repository contains an AWS CDK application that enables you to deploy and provision the STF Core stack code and its supporting infrastructure. AWS CDK provisions your resources in a safe, repeatable manner through AWS CloudFormation. 
 
-The application includes a file [```parameters.ts```](./parameters.ts) in which you can select the Context Broker and configure the resources that you will deploy like the type and size of instances to use for the database (and kafka for the Scorpio Broker). The default parameters will provide you with a scalable and available platform. 
+The application includes a file [```parameters.ts```](./parameters.ts) in which you can select the __region in which you will deploy the stack__, which Context Broker and configure the resources that you will deploy like the type and size of instances to use for the database (and kafka for the Scorpio Broker). The default parameters will provide you with a scalable and available platform. 
+
 
 *You can see __estimates__ of the monthly cost of running the STF Core using [Scorpio Broker](https://calculator.aws/#/estimate?id=113cc26502b945ddaf1e2b3c6440a26d9c19fb51) and [Orion-LD](https://calculator.aws/#/estimate?id=0d99befa9d480112ec458bd9959c271c311758f2).
 The AWS Pricing Calculator is an estimation tool that provides an __approximate cost__ of using AWS services based on the usage parameters that you specify. The AWS Pricing Calculator is not a quote tool, and does not guarantee the cost for your actual use of AWS services. The cost estimated by the AWS Pricing Calculator may vary from your actual costs for a number of reasons. 
