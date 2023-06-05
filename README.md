@@ -60,7 +60,7 @@ When deploying the STF, you can select the one you want to use.
 
 [NEC Laboratories Europe](https://www.neclab.eu/) and AWS have [worked together]((https://neclab.eu/about-us/press-releases/detail/nec-ngsi-ld-scorpio-broker-selected-for-amazon-web-services-smart-territories-framework)) to provide a scalable and available implementation of the NEC Scorpio Broker on AWS using:
 
-- [AWS Fargate](https://aws.amazon.com/fargate/?nc1=h_ls) to easily run and scale the [NEC Scorpio Broker container](https://gallery.ecr.aws/j9u9o5d1/). 
+- [AWS Fargate](https://aws.amazon.com/fargate/?nc1=h_ls) to easily run and scale the [NEC Scorpio Broker container](https://gallery.ecr.aws/smart-territory-framework/scorpio). 
 - [Amazon RDS](https://aws.amazon.com/rds) or [Amazon Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/?nc1=h_ls) for the PostgreSQL database used by the NEC Scorpio Broker. 
 - [Amazon MSK](https://aws.amazon.com/msk) to make it easy to run the Apache Kafka used by the NEC Scorpio Broker. 
 
@@ -73,7 +73,7 @@ When deploying the STF, you can select the one you want to use.
 ### Orion-LD
 
 [Fiware Foundation](https://www.fiware.org/foundation/) and AWS have worked together to provide a scalable and available implementation of Orion-LD on AWS using:
-- [AWS Fargate](https://aws.amazon.com/fargate/?nc1=h_ls) to easily run and scale the [Orion-LD container](https://gallery.ecr.aws/j9u9o5d1/). 
+- [AWS Fargate](https://aws.amazon.com/fargate/?nc1=h_ls) to easily run and scale the [Orion-LD container](https://gallery.ecr.aws/smart-territory-framework/orionld). 
 - [Amazon DocumentDB](https://aws.amazon.com/documentdb/?nc1=h_ls) (with MongoDB compatibility) for the MongoDB database used by the Orion-LD context broker. 
 
 <br>
