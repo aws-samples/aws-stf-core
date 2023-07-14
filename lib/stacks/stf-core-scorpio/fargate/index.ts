@@ -83,6 +83,8 @@ export class StfCoreScorpioFargate extends Construct {
                 rollback: true
             },
             cpu: 512, 
+            minHealthyPercent: 50, 
+            maxHealthyPercent: 200, 
             desiredCount: Parameters.stf_scorpio.fargate_desired_count, 
             publicLoadBalancer: false, 
             taskImageOptions: {
@@ -95,7 +97,8 @@ export class StfCoreScorpioFargate extends Construct {
                     DBHOST: props.db_endpoint,
                     DBPORT: props.db_port,   
                     DBNAME: Parameters.stf_scorpio.dbname,
-                    BOOTSTRAP_SERVERS: kafka_endpoint
+                    BOOTSTRAP_SERVERS: kafka_endpoint,
+                    SCORPIO_STARTUPDELAY: '15s',
                 },
                 containerPort: 9090,
                 logDriver: LogDrivers.awsLogs({
@@ -108,7 +111,7 @@ export class StfCoreScorpioFargate extends Construct {
         })
         this.fargate_alb = fargate_alb
         fargate_alb.targetGroup.configureHealthCheck({
-            path: '/actuator/health',
+            path: '/q/health',
             port: '9090'
         })
 

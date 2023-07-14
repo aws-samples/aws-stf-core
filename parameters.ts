@@ -27,7 +27,7 @@ export const Parameters = {
 
     // Parameters for the Scorpio Broker
     stf_scorpio: {
-        image_context_broker: 'public.ecr.aws/smart-territory-framework/scorpio:latest', // Link to ECR Public gallery of Scorpio Broker image.
+        image_context_broker: 'public.ecr.aws/smart-territory-framework/scorpio:4.0.9', // Link to ECR Public gallery of Scorpio Broker image.
         rds_instance_type: InstanceType.of( InstanceClass.BURSTABLE4_GRAVITON, InstanceSize.SMALL), // see https://aws.amazon.com/rds/instance-types/
         rds_storage_type: StorageType.GP3, // see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html
         dbname: 'scorpio',
