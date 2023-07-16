@@ -1,9 +1,16 @@
-import { CfnOutput, Lazy } from "aws-cdk-lib"
+import { CfnOutput, Lazy, Names } from "aws-cdk-lib"
 import { SecurityGroup, SubnetType, Vpc } from "aws-cdk-lib/aws-ec2"
-import { CfnCluster } from "aws-cdk-lib/aws-msk"
+import { CfnCluster, CfnConfiguration } from "aws-cdk-lib/aws-msk"
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId, PhysicalResourceIdReference } from "aws-cdk-lib/custom-resources"
 import { Construct } from "constructs"
 import { Parameters } from "../../../../parameters"
+
+import { createHash } from "crypto"
+
+const hash = (data:string) => {
+    return createHash("shake256", {outputLength:8}).update(data).digest('hex')
+}
+
 
 export interface StfCoreScorpioKafkaProps {
     vpc: Vpc
@@ -21,44 +28,37 @@ export class StfCoreScorpioKafka  extends Construct {
             throw new Error('The property vpc is required to create an instance of ScorpioServerlessKafka Construct')
         }
 
-        const kafka_config_name = Parameters.stf_scorpio.kafka_config_name
-        const sg_kafka = new SecurityGroup(this, 'SecurityGroupKafka', {vpc: props.vpc})
         
-        this.sg_kafka = sg_kafka
 
-        const kafka_config = new AwsCustomResource(this, 'kafkaConfig', {
-            onCreate: {
-                service: 'Kafka',
-                action: 'createConfiguration',
-                parameters: {
-                  Name: kafka_config_name,
-                  Description: kafka_config_name,
-                  KafkaVersions: [Parameters.stf_scorpio.kafka_version],
-                  ServerProperties: `auto.create.topics.enable = true`
-                },
-                physicalResourceId: PhysicalResourceId.fromResponse('Arn')
-            },
+        const kafka_config_props = {
+            serverProperties: `auto.create.topics.enable = true`,
+            kafkaVersionsList: [Parameters.stf_scorpio.kafka_version]
+        }
+        
+
+        const kafka_config_name = `${Names.uniqueId(this)}-config-${hash(JSON.stringify(kafka_config_props))}`
+
+
+        const kafka_config = new CfnConfiguration(this, "KafkaConfig", {
+            name: kafka_config_name,
+            ...kafka_config_props
+        })
+
+        const kafka_config_revision = new AwsCustomResource( this, 'kafkaConfig', {
             onUpdate: {
-                service: "Kafka",
-                action: "updateConfiguration",
-                parameters: {
-                  Arn: new PhysicalResourceIdReference(),
-                  ServerProperties: `auto.create.topics.enable = true`,
-                  Description: kafka_config_name
-                },
-                physicalResourceId: PhysicalResourceId.fromResponse('Arn')
-            }, 
-            onDelete: {
-                service: "Kafka",
-                action: "deleteConfiguration",
-                parameters: {
-                  Arn: new PhysicalResourceIdReference()
-                }
-              },            
+              service: "Kafka",
+              action: "describeConfiguration",
+              parameters: {
+                Arn: kafka_config.attrArn
+              },
+              physicalResourceId: PhysicalResourceId.fromResponse('Arn')
+            },
             policy: AwsCustomResourcePolicy.fromSdkCalls({resources: AwsCustomResourcePolicy.ANY_RESOURCE})
-          })
+        })
 
 
+        const sg_kafka = new SecurityGroup(this, 'SecurityGroupKafka', {vpc: props.vpc})
+        this.sg_kafka = sg_kafka
 
         const kafka_cluster = new CfnCluster(this, 'Cluster', {
             kafkaVersion: Parameters.stf_scorpio.kafka_version,
@@ -66,8 +66,8 @@ export class StfCoreScorpioKafka  extends Construct {
             numberOfBrokerNodes: Parameters.stf_scorpio.kafka_number_nodes, 
             clusterName: Parameters.stf_scorpio.kafka_cluster_name,
             configurationInfo: {
-                arn: kafka_config.getResponseField('Arn'),
-                revision: kafka_config.getResponseField('LatestRevision.Revision') as any as number
+                arn: kafka_config.attrArn,
+                revision: kafka_config_revision.getResponseField('LatestRevision.Revision') as any as number
             },
             encryptionInfo: {
                 encryptionInTransit: {

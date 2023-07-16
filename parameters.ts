@@ -36,9 +36,8 @@ export const Parameters = {
             maxCapacity: AuroraCapacityUnit.ACU_4,
             minCapacity: AuroraCapacityUnit.ACU_2      
         },
-        kafka_config_name: `stf-kafka-config`,
         kafka_number_nodes: 2,
-        kafka_version: "3.3.1", // see https://docs.aws.amazon.com/msk/latest/developerguide/supported-kafka-versions.html  
+        kafka_version: "3.4.0", // see https://docs.aws.amazon.com/msk/latest/developerguide/supported-kafka-versions.html  
         kafka_instance_type: "kafka.t3.small", // see https://docs.aws.amazon.com/msk/latest/developerguide/bestpractices.html
         kafka_cluster_name: 'ScorpioCluster', 
         kafka_storage_size: 100, //  see https://docs.aws.amazon.com/msk/latest/developerguide/bestpractices.html
@@ -46,7 +45,7 @@ export const Parameters = {
     },
     // Parameters for the Orion-LD Broker
     stf_orion: {
-        image_context_broker: 'public.ecr.aws/smart-territory-framework/orionld:latest',
+        image_context_broker: 'public.ecr.aws/smart-territory-framework/orionld:1.2.0', // Link to ECR Public gallery of Orion image.
         docdb_instance_type: InstanceType.of( InstanceClass.BURSTABLE4_GRAVITON, InstanceSize.MEDIUM), // https://docs.aws.amazon.com/documentdb/latest/developerguide/db-instance-classes.html 
         docdb_nb_instances: 2,
         fargate_desired_count: 2
