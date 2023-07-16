@@ -66,6 +66,7 @@ export class StfCoreOrionFargate extends Construct {
           environment: {
             ORIONLD_MONGOCONLY: "TRUE",
             ORIONLD_MONGO_URI: `mongodb://${secret.secretValueFromJson('username').toString()}:${secret.secretValueFromJson('password').toString()}@${props.db_endpoint}/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false`,
+            ORIONLD_SUBCACHE_IVAL: '3'
           },
           containerPort: 1026,
         },
