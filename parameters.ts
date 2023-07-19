@@ -45,7 +45,7 @@ export const Parameters = {
     },
     // Parameters for the Orion-LD Broker
     stf_orion: {
-        image_context_broker: 'public.ecr.aws/smart-territory-framework/orionld:1.3.0-pre-1404-debug', // Link to ECR Public gallery of Orion image.
+        image_context_broker: 'public.ecr.aws/smart-territory-framework/orionld:1.3.0', // Link to ECR Public gallery of Orion image.
         docdb_instance_type: InstanceType.of( InstanceClass.BURSTABLE4_GRAVITON, InstanceSize.MEDIUM), // https://docs.aws.amazon.com/documentdb/latest/developerguide/db-instance-classes.html 
         docdb_nb_instances: 2,
         fargate_desired_count: 2
