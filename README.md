@@ -7,8 +7,7 @@ Version 1.2.0, see [Changelog](./CHANGELOG.md#version-120) for all notable chang
 > :warning: **This stack is for demonstration purposes only. It exposes a public API endpoint for the STF Core. Before using in production, please consider adding a [mechanism for controlling and managing access](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-access-control.html) to this API.** 
 
 <br> 
-
-## Overview 
+## Overview - Safia D
 
 The Smart Territory Framework – STF – is an open-source framework that makes it easier and faster to create and operate interoperable platforms. STF supports the development and integration of smart and efficient solutions across multiple domains such as Smart Cities, Campuses and Regions; Energy and Utilities; Agriculture; Smart Building and Manufacturing.
 
