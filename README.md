@@ -1,4 +1,4 @@
-# Smart Territory Framework Core - STF Core
+# Cloned 9/23/20238 - Smart Territory Framework Core - STF Core
 
 Version 1.2.0, see [Changelog](./CHANGELOG.md#version-120) for all notable changes made in this version.
 
