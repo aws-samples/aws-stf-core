@@ -1,0 +1,16 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+
+# Lambda and script
+
+!install.js 
+!lib/stacks/*/*/*/*/*.js
+
+.DS_Store
