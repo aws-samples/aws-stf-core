@@ -25,11 +25,3 @@ Explore the [documentation website of Garnet Framework](https://garnet-framework
 Garnets form a group of closely related minerals that have the remarkable ability to form gemstones in almost every color. We designed the Garnet Framework to make it easier and faster to integrate and develop smart and efficient solutions across multiple domains such as Smart Cities, Regions and Campuses, Energy and Utilities, Agriculture, Smart Building, Automotive and Manufacturing. 
 
 We equip you with the Garnet Framework so you can create your smart solutions (gemstones) faster and easier! 
-
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-
-This library is licensed under the MIT-0 License. See the LICENSE file.
